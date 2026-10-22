@@ -212,6 +212,18 @@
   .edit-form .ef-act { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; position: sticky; bottom: 0; background: #fff; padding: 6px 0 2px; }
   @media (max-width: 700px) { .fadd { grid-template-columns: 1fr; } .ftab th:nth-child(4), .ftab td:nth-child(4) { display: none; } }
   @media print { #dlg { display: none !important; } }
+  #gbar { position: absolute; z-index: 900; left: 50%; transform: translateX(-50%); top: 58px; width: min(560px, calc(100% - 20px)); background: #fff; color: #1f2933; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.35); padding: 8px 12px; font-size: 13px; border-left: 4px solid #00b4d8; }
+  #gbar[hidden] { display: none; }
+  #gbar .gh { color: #52606d; font-size: 12.5px; margin: 2px 0 6px; }
+  #gbar .ga { display: flex; gap: 6px; align-items: center; } #gbar .ga .sp { flex: 1; }
+  #gbar .btn.active { background: #e7f5ff; border-color: #1f6feb; }
+  .gediting .leaflet-interactive { cursor: crosshair; }
+  #dlg .edit-form.nf { max-height: 58vh; overflow-y: auto; padding-right: 4px; }
+  #dlg .edit-form.nf .ef-row span { color: var(--muted); }
+  #dlg .edit-form.nf input, #dlg .edit-form.nf textarea { background: var(--bg); color: var(--fg); border-color: var(--line); }
+  #dlg .edit-form.nf .dlg-act { position: sticky; bottom: 0; background: var(--bg); padding-top: 6px; }
+  .acts .adm-only svg { vertical-align: middle; }
+  @media (max-width: 700px) { #gbar { top: 104px; } }
   /* Bảng thông tin (kiểu cổng quy hoạch) */
   #info { position: absolute; z-index: 850; top: 58px; right: 10px; width: 340px; max-height: calc(100% - 100px); display: flex; flex-direction: column; background: #fff; color: #1f2933; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.4); overflow: hidden; }
   #info[hidden] { display: none; }
@@ -590,7 +602,9 @@ const ICON = {
   edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
   trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
   lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
-  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  shape: '<path d="M5 18L8 6l9 3 2 9z"/><circle cx="5" cy="18" r="1.6" fill="currentColor"/><circle cx="8" cy="6" r="1.6" fill="currentColor"/><circle cx="17" cy="9" r="1.6" fill="currentColor"/><circle cx="19" cy="18" r="1.6" fill="currentColor"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>'
 };
 const svg = (p, s = 17) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
@@ -767,7 +781,7 @@ function fixOrder() {
     defs.filter(d => d.on && d._drawn).sort((a, b) => a.order - b.order).forEach(d => d.gl.eachLayer(l => l.bringToFront()));
   });
 }
-const visibleFeats = def => def.feats.filter(f => !def.hidden.has(f._cat));
+const visibleFeats = def => def.feats.filter(f => !def.hidden.has(f._cat) && !f._editing);
 function redraw(def) {
   def.gl.clearLayers();
   def.gl.addData({ type: 'FeatureCollection', features: visibleFeats(def) });
@@ -921,7 +935,7 @@ const keyOf = (def, f) => def.key ? def.key(f.properties) : f._cat;
 function sectionHtml(def, f, open, idx) {
   const key = keyOf(def, f);
   const rows = rowsOf(def, f).map(r => `<tr><td>${esc(r[0])}</td><td>${r[2] ? '<b>' + esc(r[1]) + '</b>' : esc(r[1])}</td></tr>`).join('');
-  return `<details${open ? ' open' : ''} data-i="${idx}"><summary>${esc(def.title)}${isEmpty(key) ? '' : ` <small>· ${esc(key)}</small>`}<button class="ib zb" data-a="zoom" data-i="${idx}" title="Phóng tới đối tượng">${svg(ICON.zoom, 15)}</button>${DB.admin ? `<button class="ib zb adm" data-a="edit" data-i="${idx}" title="Sửa thuộc tính">${svg(ICON.edit, 15)}</button><button class="ib zb adm del" data-a="del" data-i="${idx}" title="Xóa đối tượng">${svg(ICON.trash, 15)}</button>` : ''}</summary><table class="popup-table">${rows}</table></details>`;
+  return `<details${open ? ' open' : ''} data-i="${idx}"><summary>${esc(def.title)}${isEmpty(key) ? '' : ` <small>· ${esc(key)}</small>`}<button class="ib zb" data-a="zoom" data-i="${idx}" title="Phóng tới đối tượng">${svg(ICON.zoom, 15)}</button>${DB.admin ? `<button class="ib zb adm" data-a="edit" data-i="${idx}" title="Sửa thuộc tính">${svg(ICON.edit, 15)}</button><button class="ib zb adm" data-a="reshape" data-i="${idx}" title="Sửa hình (kéo đỉnh, thêm/bớt đỉnh, di chuyển)">${svg(ICON.shape, 15)}</button><button class="ib zb adm del" data-a="del" data-i="${idx}" title="Xóa đối tượng">${svg(ICON.trash, 15)}</button>` : ''}</summary><table class="popup-table">${rows}</table></details>`;
 }
 let hl = null;
 function clearHL() { if (hl) { map.removeLayer(hl); hl = null; } }
@@ -978,7 +992,7 @@ function layerNode(def, g = def.group) {
   const fail = !!def.error;
   const noop = !!(GROUP_OPTS[g] && GROUP_OPTS[g].groupOpOnly);
   if (noop) n.classList.add('noop');
-  n.innerHTML = `<div class="nrow"><span class="tri"></span><label class="lab${fail ? ' disabled' : ''}"><input type="checkbox"${fail ? ' disabled' : ''}>${swatchHtml(def)}<span class="nm">${esc(def.title)}</span></label><span class="meta">${fail ? 'lỗi tải' : fmtN(def.feats.length)}</span><span class="acts"><button class="ib" data-a="zoom" title="Phóng tới lớp">${svg(ICON.zoom, 15)}</button><button class="ib" data-a="table" title="Mở bảng thuộc tính">${svg(ICON.table, 15)}</button></span></div><div class="kids"><div class="oprow"><span>Độ đậm</span><input type="range" min="0" max="100" value="100" aria-label="Độ đậm lớp"></div><div class="cats"></div></div>`;
+  n.innerHTML = `<div class="nrow"><span class="tri"></span><label class="lab${fail ? ' disabled' : ''}"><input type="checkbox"${fail ? ' disabled' : ''}>${swatchHtml(def)}<span class="nm">${esc(def.title)}</span></label><span class="meta">${fail ? 'lỗi tải' : fmtN(def.feats.length)}</span><span class="acts"><button class="ib adm-only" data-a="add" title="Vẽ đối tượng mới vào lớp này">${svg(ICON.plus, 15)}</button><button class="ib" data-a="zoom" title="Phóng tới lớp">${svg(ICON.zoom, 15)}</button><button class="ib" data-a="table" title="Mở bảng thuộc tính">${svg(ICON.table, 15)}</button></span></div><div class="kids"><div class="oprow"><span>Độ đậm</span><input type="range" min="0" max="100" value="100" aria-label="Độ đậm lớp"></div><div class="cats"></div></div>`;
   if (def.cats && def.cats.length > 1) {
     const c = n.querySelector('.cats');
     def.cats.forEach(cat => {
@@ -999,6 +1013,7 @@ function layerNode(def, g = def.group) {
   n.querySelector('.lab input').addEventListener('change', e => setOn(def, e.target.checked));
   n.querySelector('[data-a=zoom]').addEventListener('click', () => zoomLayer(def));
   n.querySelector('[data-a=table]').addEventListener('click', () => openAttr(def));
+  n.querySelector('[data-a=add]').addEventListener('click', () => admCreate(def));
   n.querySelector('.oprow input').addEventListener('input', e => { def.op = e.target.value / 100; document.querySelectorAll(`.lyr[data-id="${def.id}"] .oprow input`).forEach(i => { i.value = e.target.value; }); if (def._drawn) def.gl.setStyle(f => styleOf(def, f)); });
   return n;
 }
@@ -1547,6 +1562,7 @@ function initMap() {
       else if (k === 'copy') { const t = infoText(), ok = () => toast('Đã sao chép thuộc tính'); if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, () => fallbackCopy(t, ok)); else fallbackCopy(t, ok); }
       else if (k === 'edit') { const h = INFO.hits[+a.dataset.i]; if (h) admEditForm(h, +a.dataset.i); }
       else if (k === 'del') { const h = INFO.hits[+a.dataset.i]; if (h) admDeleteFeature(h.def, h.f); }
+      else if (k === 'reshape') { const h = INFO.hits[+a.dataset.i]; if (h) admReshape(h.def, h.f); }
       else if (k === 'zoom') { const h = INFO.hits[+a.dataset.i]; if (h) { S.userMoved = true; map.fitBounds(L.geoJSON(h.f).getBounds(), { maxZoom: 20, padding: [80, 80] }); setHighlight(h.f); } }
       return;
     }
@@ -1587,6 +1603,7 @@ function initMap() {
   map.on('contextmenu', e => copyText(`${e.latlng.lat.toFixed(6)}, ${e.latlng.lng.toFixed(6)}`));
 
   map.on('click', e => {
+    if (G.active) return;
     if (AN.mode === 'pick') { if (window.turf) { AN.base = turf.point([e.latlng.lng, e.latlng.lat]); anEnd(); anBuild(); } return; }
     if (AN.mode === 'draw') { AN.pts.push(e.latlng); anDrawTmp(); return; }
     if (M.mode && !M.done) { M.pts.push(e.latlng); measureDraw(); return; }
@@ -1764,7 +1781,7 @@ async function dbFetch(path, { method = 'GET', body, auth = false, prefer, timeo
 function dbLoad() {
   if (!dbOn()) return Promise.resolve();
   const job = Promise.all([
-    dbFetch('/rest/v1/feature_edits?select=layer_id,oid,props,deleted&limit=100000').then(rows => (rows || []).forEach(r => DB.edits.set(editKey(r.layer_id, r.oid), r))),
+    dbFetch('/rest/v1/feature_edits?select=layer_id,oid,props,deleted,geom,is_new&limit=100000').then(rows => (rows || []).forEach(r => DB.edits.set(editKey(r.layer_id, r.oid), r))),
     dbFetch('/rest/v1/layer_schema?select=layer_id,cfg').then(rows => (rows || []).forEach(r => { DB.schema[r.layer_id] = r.cfg || {}; }))
   ]).catch(e => { DB.loadError = e.message; });
   return Promise.race([job, new Promise(r => setTimeout(() => { if (!DB.edits.size) DB.loadError = DB.loadError || 'máy chủ phản hồi chậm'; r(); }, 6000))]);
@@ -1784,8 +1801,11 @@ function applyEdits(def, feats) {
     const e = DB.edits.get(editKey(def.id, oidOf(f)));
     if (e && e.deleted) continue;
     if (e && e.props) f.properties = Object.assign({}, f.properties, e.props);
+    if (e && e.geom) { f.geometry = e.geom; f._bb = null; }
     out.push(f);
   }
+  for (const e of DB.edits.values())   // đối tượng vẽ mới trên web
+    if (e.layer_id === def.id && e.is_new && !e.deleted && e.geom) out.push({ type: 'Feature', properties: Object.assign({ OBJECTID: e.oid }, e.props), geometry: e.geom });
   applySchema(def, out);
   return out;
 }
@@ -1887,24 +1907,27 @@ function admLoginDlg() {
   });
 }
 function admMenu() {
-  const layers = defs.filter(d => d.loaded && !d.error && d.feats.length).sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+  const layers = defs.filter(d => d.loaded && !d.error).sort((a, b) => a.title.localeCompare(b.title, 'vi'));
   const c = dlg(`<h2>Quản trị dữ liệu</h2><p class="muted">Đang đăng nhập: <b>${esc(DB.session.email || '')}</b></p>
     <ul class="adm-help"><li><b>Sửa / xóa đối tượng:</b> bấm vào đối tượng trên bản đồ → nút ${svg(ICON.edit, 14)} hoặc ${svg(ICON.trash, 14)} trong bảng thông tin.</li>
+    <li><b>Sửa hình:</b> bấm vào đối tượng → nút ${svg(ICON.shape, 14)}. <b>Vẽ mới:</b> nút ${svg(ICON.plus, 14)} cạnh tên lớp, hoặc chọn lớp bên dưới → “Vẽ đối tượng mới”.</li>
     <li><b>Thêm / xóa / ẩn hiện trường:</b> chọn lớp bên dưới → “Quản lý trường” (hoặc nút cùng tên trong Bảng thuộc tính).</li>
     <li><b>Xuất GeoJSON đã sửa:</b> trong “Quản lý trường” hoặc nút “Tải GeoJSON” của Bảng thuộc tính.</li></ul>
     <label class="fld"><span>Lớp</span><select id="admLayer">${layers.map(d => `<option value="${d.id}">${esc(d.title)}</option>`).join('')}</select></label>
-    <div class="dlg-act"><button class="btn" data-x="out">Đăng xuất</button><span class="sp"></span><button class="btn" data-x="close">Đóng</button><button class="btn primary" data-x="fields">Quản lý trường</button></div>`);
+    <div class="dlg-act"><button class="btn" data-x="out">Đăng xuất</button><span class="sp"></span><button class="btn" data-x="close">Đóng</button><button class="btn" data-x="add">${svg(ICON.plus, 14)} Vẽ đối tượng mới</button><button class="btn primary" data-x="fields">Quản lý trường</button></div>`);
   c.addEventListener('click', e => {
     const x = e.target.closest('[data-x]'); if (!x) return;
     if (x.dataset.x === 'close') dlgClose();
     else if (x.dataset.x === 'out') { dlgClose(); admLogout(); }
     else if (x.dataset.x === 'fields') admFieldsDlg(byId[c.querySelector('#admLayer').value]);
+    else if (x.dataset.x === 'add') { const d = byId[c.querySelector('#admLayer').value]; dlgClose(); admCreate(d); }
   });
 }
 
 /* ---------- Sau khi dữ liệu một lớp thay đổi: cập nhật mọi nơi đang hiển thị ---------- */
 function admRefreshLayer(def) {
   def.feats.forEach(f => { f._bb = f._bb || bboxOf(f.geometry); });
+  if (def.empty && def.feats.length) { def.empty = false; if (!def.on) setOn(def, true); }
   computeCats(def);
   def._lgDirty = true; def._li = null;
   if (def._drawn) redraw(def);
@@ -1925,9 +1948,8 @@ function admEditForm(h, idx) {
   sec.open = true;
   const tbl = sec.querySelector('.popup-table, .edit-form'); if (!tbl) return;
   const form = el('form', 'edit-form');
-  form.innerHTML = `<div class="ef-meta">OBJECTID ${esc(oidOf(f))}</div>` + keys.map(k => {
-    const v = p[k], num = fieldIsNum(def, k), long = !num && typeof v === 'string' && v.length > 40;
-    const inp = long ? `<textarea data-k="${esc(k)}" rows="2">${esc(v)}</textarea>` : `<input data-k="${esc(k)}" ${num ? 'type="number" step="any"' : 'type="text"'} value="${isEmpty(v) ? '' : esc(v)}">`;
+  form.innerHTML = `<div class="ef-meta">OBJECTID ${esc(oidOf(f))}</div>` + datalistsHtml(def, keys) + keys.map(k => {
+    const inp = fieldInput(def, k, p[k]);
     return `<label class="ef-row${fieldHidden(def, k) ? ' hid' : ''}"><span title="${esc(k)}">${esc(fieldLabel(def, k))}${fieldHidden(def, k) ? ' <i>(ẩn)</i>' : ''}</span>${inp}</label>`;
   }).join('') + `<div class="dlg-err" hidden></div><div class="ef-act"><button type="button" class="btn" data-x="cancel">Hủy</button><button type="submit" class="btn primary">Lưu</button></div>`;
   tbl.replaceWith(form);
@@ -1935,14 +1957,8 @@ function admEditForm(h, idx) {
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const err = form.querySelector('.dlg-err'), sub = form.querySelector('[type=submit]'); err.hidden = true;
-    const diff = {};
-    form.querySelectorAll('[data-k]').forEach(i => {
-      const k = i.dataset.k, raw = i.value.trim();
-      let v = raw === '' ? null : raw;
-      if (v !== null && fieldIsNum(def, k)) { const n = Number(raw.replace(',', '.')); if (isFinite(n)) v = n; }
-      const old = isEmpty(p[k]) ? null : p[k];
-      if (String(v) !== String(old)) diff[k] = v;
-    });
+    const diff = {}, vals = readFieldInputs(def, form);
+    Object.entries(vals).forEach(([k, v]) => { const old = isEmpty(p[k]) ? null : p[k]; if (String(v) !== String(old)) diff[k] = v; });
     if (!Object.keys(diff).length) { openInfo(INFO.ll, INFO.hits); toast('Không có thay đổi'); return; }
     sub.disabled = true; sub.textContent = 'Đang lưu…';
     try { await admSaveFeature(def, f, diff); openInfo(INFO.ll, INFO.hits); toast(`Đã lưu ${Object.keys(diff).length} thay đổi`); }
@@ -1954,7 +1970,7 @@ async function admSaveFeature(def, f, diff) {
   const oid = oidOf(f), k = editKey(def.id, oid), prev = DB.edits.get(k);
   const props = Object.assign({}, prev && prev.props, diff);
   await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [{ layer_id: def.id, oid, props, deleted: false }] });
-  DB.edits.set(k, { layer_id: def.id, oid, props, deleted: false });
+  DB.edits.set(k, Object.assign({}, prev, { layer_id: def.id, oid, props, deleted: false }));
   Object.assign(f.properties, diff);
   admRefreshLayer(def);
   if (INFO.hits.some(h => h.f === f)) setHighlight(f);
@@ -1967,12 +1983,198 @@ async function admDeleteFeature(def, f) {
   try {
     await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [{ layer_id: def.id, oid, props: (prev && prev.props) || {}, deleted: true }] });
   } catch (ex) { toast('Không xóa được: ' + ex.message); return; }
-  DB.edits.set(k, { layer_id: def.id, oid, props: (prev && prev.props) || {}, deleted: true });
+  DB.edits.set(k, Object.assign({}, prev, { layer_id: def.id, oid, props: (prev && prev.props) || {}, deleted: true }));
   def.feats = def.feats.filter(x => x !== f);
   INFO.hits = INFO.hits.filter(h => h.f !== f);
   admRefreshLayer(def);
   if (INFO.hits.length) openInfo(INFO.ll, INFO.hits); else closeInfo();
   toast('Đã xóa đối tượng');
+}
+
+/* ---------- Ô nhập giá trị trường (gợi ý các giá trị đã có trong lớp) ---------- */
+const dlId = (def, k) => 'dl_' + def.id + '_' + k;
+function datalistsHtml(def, keys) {
+  return keys.map(k => {
+    if (fieldIsNum(def, k)) return '';
+    const vals = [...new Set(def.feats.map(f => f.properties[k]).filter(v => !isEmpty(v)).map(String))];
+    if (!vals.length || vals.length > 60) return '';
+    return `<datalist id="${esc(dlId(def, k))}">${vals.sort((a, b) => a.localeCompare(b, 'vi', { numeric: true })).map(v => `<option value="${esc(v)}">`).join('')}</datalist>`;
+  }).join('');
+}
+function fieldInput(def, k, v) {
+  const num = fieldIsNum(def, k), long = !num && typeof v === 'string' && v.length > 40;
+  if (long) return `<textarea data-k="${esc(k)}" rows="2">${esc(v)}</textarea>`;
+  return `<input data-k="${esc(k)}" ${num ? 'type="number" step="any"' : `type="text" list="${esc(dlId(def, k))}"`} value="${isEmpty(v) ? '' : esc(v)}" autocomplete="off">`;
+}
+function readFieldInputs(def, root) {
+  const out = {};
+  root.querySelectorAll('[data-k]').forEach(i => {
+    const k = i.dataset.k, raw = i.value.trim();
+    let v = raw === '' ? null : raw;
+    if (v !== null && fieldIsNum(def, k)) { const n = Number(raw.replace(',', '.')); if (isFinite(n)) v = n; }
+    out[k] = v;
+  });
+  return out;
+}
+
+/* ---------- Vẽ mới / sửa hình (thư viện Leaflet-Geoman, chỉ tải khi quản trị viên dùng tới) ---------- */
+const G = { active: null, def: null, f: null, layer: null, drag: false };
+let gmP = null;
+function loadGeoman() {
+  if (window.L && L.PM) { if (!map.pm) map.pm = new L.PM.Map(map); return Promise.resolve(); }
+  if (gmP) return gmP;
+  gmP = new Promise((res, rej) => {
+    const css = document.createElement('link'); css.rel = 'stylesheet'; css.href = 'leaflet-geoman.css'; document.head.appendChild(css);
+    const sc = document.createElement('script'); sc.src = 'leaflet-geoman.min.js';
+    sc.onload = () => { if (!map.pm) map.pm = new L.PM.Map(map); map.pm.setGlobalOptions({ snappable: true, snapDistance: 14, tooltips: false, allowSelfIntersection: false }); res(); };
+    sc.onerror = () => { gmP = null; rej(new Error('không tải được thư viện vẽ (leaflet-geoman.min.js)')); };
+    document.head.appendChild(sc);
+  });
+  return gmP;
+}
+let gPane = null;
+function gEditPane() { if (!gPane) { gPane = map.createPane('gedit'); gPane.style.zIndex = 645; } return 'gedit'; }
+const G_STYLE = { color: '#00b4d8', weight: 3, opacity: 1, fillColor: '#00b4d8', fillOpacity: .18 };
+function gBar(html) {
+  let b = $('gbar');
+  if (!b) { b = el('div', ''); b.id = 'gbar'; map.getContainer().appendChild(b); L.DomEvent.disableClickPropagation(b); L.DomEvent.disableScrollPropagation(b); }
+  b.innerHTML = html; b.hidden = !html; return b;
+}
+const r8 = c => Array.isArray(c[0]) ? c.map(r8) : c.map(v => Math.round(v * 1e8) / 1e8);
+function normGeom(g, like) {
+  g = { type: g.type, coordinates: r8(g.coordinates) };
+  if (like && /^Multi/.test(like) && !/^Multi/.test(g.type)) g = { type: 'Multi' + g.type, coordinates: [g.coordinates] };
+  return g;
+}
+function geomOfLayer(lyr) {
+  const gs = []; lyr.eachLayer(l => { const j = l.toGeoJSON(); if (j && j.geometry) gs.push(j.geometry); });
+  if (gs.length === 1) return gs[0];
+  const t = gs[0].type.replace(/^Multi/, '');
+  return { type: 'Multi' + t, coordinates: gs.flatMap(g => /^Multi/.test(g.type) ? g.coordinates : [g.coordinates]) };
+}
+function geomMetrics(g) {
+  const ll = c => L.latLng(c[1], c[0]);
+  if (/Polygon/.test(g.type)) {
+    let a = 0, p = 0;
+    (g.type === 'Polygon' ? [g.coordinates] : g.coordinates).forEach(rings => rings.forEach((r, i) => { const pts = r.map(ll); a += (i ? -1 : 1) * areaOf(pts); p += pathLen(pts, false); }));
+    return { Shape_Area: Math.round(a * 1e4) / 1e4, Shape_Length: Math.round(p * 1e4) / 1e4 };
+  }
+  if (/LineString/.test(g.type)) return { Shape_Length: Math.round((g.type === 'LineString' ? [g.coordinates] : g.coordinates).reduce((s, l) => s + pathLen(l.map(ll), false), 0) * 1e4) / 1e4 };
+  return {};
+}
+function metricsFor(def, g) { const m = geomMetrics(g), have = new Set(fieldsOf(def)), out = {}; Object.entries(m).forEach(([k, v]) => { if (have.has(k)) out[k] = v; }); return out; }
+function gStop() {
+  if (G.layer) { map.removeLayer(G.layer); G.layer = null; }
+  if (map.pm) { map.pm.disableDraw(); }
+  if (G.f) { G.f._editing = false; if (G.def && G.def._drawn) redraw(G.def); }
+  G.active = null; G.def = null; G.f = null; G.drag = false;
+  map.getContainer().classList.remove('gediting'); gBar('');
+  updateLabels();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && G.active && (!$('dlg') || $('dlg').hidden)) gStop(); });
+
+async function admReshape(def, f) {
+  if (G.active) gStop();
+  try { await loadGeoman(); } catch (ex) { toast(ex.message); return; }
+  closeInfo();
+  G.active = 'reshape'; G.def = def; G.f = f;
+  f._editing = true; if (def._drawn) redraw(def); def._lgDirty = true; updateLabels();
+  const pane = gEditPane();
+  G.layer = L.geoJSON({ type: 'Feature', geometry: f.geometry, properties: {} }, {
+    pane, style: () => G_STYLE,
+    pointToLayer: (g, ll) => L.circleMarker(ll, Object.assign({ pane, radius: 8 }, G_STYLE))
+  }).addTo(map);
+  G.layer.eachLayer(l => l.pm.enable({ snappable: true, snapDistance: 14, allowSelfIntersection: false, draggable: def.geom === 'point' }));
+  map.getContainer().classList.add('gediting');
+  const key = keyOf(def, f);
+  const hint = def.geom === 'point' ? 'Kéo điểm tới vị trí mới.' : 'Kéo đỉnh để sửa · bấm điểm mờ giữa cạnh để thêm đỉnh · bấm chuột phải vào đỉnh để xóa đỉnh · tự bắt dính vào đối tượng gần.';
+  const b = gBar(`<div class="gt"><b>Sửa hình:</b> ${esc(def.title)}${isEmpty(key) ? '' : ' · ' + esc(key)}</div><div class="gh">${hint}</div>
+    <div class="ga">${def.geom === 'point' ? '' : '<button class="btn" data-g="move">Di chuyển cả hình</button>'}<span class="sp"></span><button class="btn" data-g="cancel">Hủy</button><button class="btn primary" data-g="save">Lưu hình</button></div>`);
+  b.onclick = async e => {
+    const x = e.target.closest('[data-g]'); if (!x) return;
+    if (x.dataset.g === 'cancel') { gStop(); return; }
+    if (x.dataset.g === 'move') {
+      G.drag = !G.drag; x.classList.toggle('active', G.drag); x.textContent = G.drag ? 'Đang di chuyển — bấm để sửa đỉnh' : 'Di chuyển cả hình';
+      G.layer.eachLayer(l => { if (G.drag) { l.pm.disable(); l.pm.enableLayerDrag(); } else { l.pm.disableLayerDrag(); l.pm.enable({ snappable: true, snapDistance: 14, allowSelfIntersection: false }); } });
+      return;
+    }
+    if (x.dataset.g === 'save') {
+      const geom = normGeom(geomOfLayer(G.layer), f.geometry.type);
+      x.disabled = true; x.textContent = 'Đang lưu…';
+      try { await admSaveGeometry(def, f, geom); }
+      catch (ex) { toast('Không lưu được: ' + ex.message); x.disabled = false; x.textContent = 'Lưu hình'; return; }
+      gStop(); toast('Đã lưu hình mới');
+      const c = L.geoJSON(f).getBounds().getCenter(); openInfo(c, [{ def, f }]);
+    }
+  };
+}
+async function admSaveGeometry(def, f, geom) {
+  const oid = oidOf(f), k = editKey(def.id, oid), prev = DB.edits.get(k);
+  const m = metricsFor(def, geom);
+  const props = Object.assign({}, prev && prev.props, m);
+  const row = { layer_id: def.id, oid, props, geom, deleted: false, is_new: !!(prev && prev.is_new) };
+  await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [row] });
+  DB.edits.set(k, row);
+  f.geometry = geom; f._bb = bboxOf(geom); Object.assign(f.properties, m);
+  f._editing = false;
+  admRefreshLayer(def);
+}
+
+async function admCreate(def) {
+  if (!def) return;
+  if (G.active) gStop();
+  try { await loadGeoman(); } catch (ex) { toast(ex.message); return; }
+  closeInfo(); dlgClose();
+  if (!def.on && !def.empty) setOn(def, true);
+  const shape = def.geom === 'polygon' ? 'Polygon' : def.geom === 'line' ? 'Line' : 'CircleMarker';
+  G.active = 'create'; G.def = def;
+  map.getContainer().classList.add('gediting');
+  const hint = shape === 'Polygon' ? 'Bấm từng đỉnh trên bản đồ · bấm lại đỉnh đầu tiên để khép vùng.' : shape === 'Line' ? 'Bấm từng điểm của đường · bấm lại điểm cuối để kết thúc.' : 'Bấm vào vị trí cần đặt điểm.';
+  const b = gBar(`<div class="gt"><b>Vẽ mới vào lớp:</b> ${esc(def.title)}</div><div class="gh">${hint} Tự bắt dính vào đối tượng gần. Esc để hủy.</div>
+    <div class="ga"><span class="sp"></span><button class="btn" data-g="cancel">Hủy</button>${shape === 'CircleMarker' ? '' : '<button class="btn primary" data-g="finish">Xong</button>'}</div>`);
+  b.onclick = e => {
+    const x = e.target.closest('[data-g]'); if (!x) return;
+    if (x.dataset.g === 'cancel') gStop();
+    else if (x.dataset.g === 'finish') { const d = map.pm.Draw[shape]; if (d && d._finishShape) { try { d._finishShape(); } catch (ex) { toast('Chưa đủ điểm để tạo hình'); } } }
+  };
+  map.off('pm:create', admOnCreate); map.once('pm:create', admOnCreate);
+  map.pm.enableDraw(shape, { snappable: true, snapDistance: 14, tooltips: false, finishOn: shape === 'Line' ? 'dblclick' : null, pathOptions: Object.assign({ pane: gEditPane() }, G_STYLE), templineStyle: { color: '#00b4d8' }, hintlineStyle: { color: '#00b4d8', dashArray: '5,5' } });
+}
+function admOnCreate(e) {
+  const def = G.def; if (!def || G.active !== 'create') { if (e.layer) map.removeLayer(e.layer); return; }
+  map.pm.disableDraw();
+  G.layer = L.featureGroup([e.layer]).addTo(map);
+  const like = def.feats[0] && def.feats[0].geometry.type;
+  const geom = normGeom(e.layer.toGeoJSON().geometry, like);
+  gBar('');
+  admNewFeatureDlg(def, geom);
+}
+function admNewFeatureDlg(def, geom) {
+  const keys = fieldsOf(def).filter(k => !LOCKED.has(k));
+  const m = geomMetrics(geom);
+  const card = dlg(`<h2>Thuộc tính đối tượng mới</h2><p class="muted">Lớp: <b>${esc(def.title)}</b>${m.Shape_Area != null ? ` · diện tích hình học ${nf(m.Shape_Area, 1)} m²` : m.Shape_Length != null ? ` · chiều dài ${nf(m.Shape_Length, 1)} m` : ''}. Để trống các trường chưa có thông tin.</p>
+    <form class="edit-form nf">${datalistsHtml(def, keys)}${keys.map(k => `<label class="ef-row${fieldHidden(def, k) ? ' hid' : ''}"><span title="${esc(k)}">${esc(fieldLabel(def, k))}${k === def.cat ? ' <i>(tô màu)</i>' : ''}</span>${fieldInput(def, k, null)}</label>`).join('')}
+    <div class="dlg-err" hidden></div><div class="dlg-act"><button type="button" class="btn" data-x="cancel">Hủy</button><button type="submit" class="btn primary">Lưu đối tượng</button></div></form>`, { wide: true });
+  const form = card.querySelector('form'), err = card.querySelector('.dlg-err'), sub = form.querySelector('[type=submit]');
+  card.querySelector('[data-x=cancel]').addEventListener('click', () => { dlgClose(); gStop(); });
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); err.hidden = true; sub.disabled = true; sub.textContent = 'Đang lưu…';
+    const vals = readFieldInputs(def, form);
+    const oid = Date.now();
+    const props = Object.assign({}, vals, metricsFor(def, geom));
+    const row = { layer_id: def.id, oid, props, geom, deleted: false, is_new: true };
+    try { await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [row] }); }
+    catch (ex) { err.textContent = 'Không lưu được: ' + ex.message; err.hidden = false; sub.disabled = false; sub.textContent = 'Lưu đối tượng'; return; }
+    DB.edits.set(editKey(def.id, oid), row);
+    const f = { type: 'Feature', properties: Object.assign({ OBJECTID: oid }, props), geometry: geom };
+    f._bb = bboxOf(geom);
+    def.feats.push(f);
+    dlgClose(); gStop();
+    admRefreshLayer(def);
+    if (!def.on) setOn(def, true);
+    openInfo(L.geoJSON(f).getBounds().getCenter(), [{ def, f }]);
+    toast('Đã thêm đối tượng mới');
+  });
 }
 
 /* ---------- Quản lý trường của một lớp ---------- */
