@@ -399,7 +399,7 @@ const LAYERS = [
   { id: 'CongTrinh_L', group: 'Cảnh quan', title: 'Đường nét công trình', geom: 'line', color: '#444', weight: .7 },
   { id: 'DongMucThietKe_L', group: 'San nền', title: 'Đường đồng mức thiết kế', geom: 'line', color: '#b5651d', weight: 1.2,
     label: { html: p => isEmpty(p.caoDoThietKe) ? null : nf(p.caoDoThietKe, 2), cls: 'lbl-sm', color: '#8a4b0f', min: 19, max: 99 } },
-  { id: 'MangLuoiThoatNuocMua_L', group: 'Hạ tầng thoát nước mưa', title: 'Tuyến cống thoát nước mưa', geom: 'line', on: true, color: '#1f5fbf', weight: 3, dash: '8 4',
+  { id: 'MangLuoiThoatNuocMua_L', group: 'Hạ tầng thoát nước mưa', title: 'Tuyến cống thoát nước mưa', geom: 'line', color: '#1f5fbf', weight: 3, dash: '8 4',
     label: { html: p => isEmpty(p.duongKinh) ? null : 'D' + p.duongKinh, cls: 'lbl-sm', color: '#1f5fbf', min: 19, max: 99 } },
   { id: 'CongTrinhCBKT_L', group: 'Hạ tầng thoát nước mưa', title: 'Đoạn cống kỹ thuật (TNM-D600)', geom: 'line', color: '#00a3a3', weight: 2 },
   // ---- Giao thông ----
