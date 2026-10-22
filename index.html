@@ -164,6 +164,13 @@
   .popup-table td { padding: 3px 6px; border-bottom: 1px solid #e5e8ec; vertical-align: top; }
   .popup-table td:first-child { color: #6b7785; padding-right: 12px; white-space: nowrap; }
   #toggle { display: none; }
+  #panelClose, #scrim { display: none; }
+  @supports (height: 100dvh) { html, body { height: 100dvh; } }
+  @media (pointer: coarse) {
+    #sbtab { width: 26px; height: 72px; font-size: 18px; }
+    .leaflet-touch .leaflet-bar a { width: 36px; height: 36px; line-height: 36px; }
+  }
+  @media (min-width: 701px) and (max-width: 1100px) { :root { --panel-w: 300px; } }
   /* Bảng thông tin (kiểu cổng quy hoạch) */
   #info { position: absolute; z-index: 850; top: 58px; right: 10px; width: 340px; max-height: calc(100% - 100px); display: flex; flex-direction: column; background: #fff; color: #1f2933; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.4); overflow: hidden; }
   #info[hidden] { display: none; }
@@ -237,7 +244,13 @@
     #sbtab { display: none; }
     #app { display: block; position: relative; }
     #panel { position: absolute; inset: 0 auto 0 0; width: min(90vw, 360px); transform: translateX(-100%); transition: transform .2s; }
-    #panel.open { transform: none; }
+    #panel.open { transform: none; box-shadow: 4px 0 18px rgba(0,0,0,.35); }
+    #panel { z-index: 1200; }
+    #panel header { padding-right: 92px; }
+    #noteBtn { right: 54px; top: 16px; }
+    #panelClose { display: flex; align-items: center; justify-content: center; position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; border-radius: 50%; background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); font-size: 22px; line-height: 1; cursor: pointer; padding: 0; }
+    #scrim { display: block; position: absolute; inset: 0; z-index: 1150; background: rgba(0,0,0,.35); opacity: 0; pointer-events: none; transition: opacity .2s; }
+    #panel.open ~ #scrim { opacity: 1; pointer-events: auto; }
     #main { position: absolute; inset: 0; }
     #attr, #ana { position: absolute; left: 0; right: 0; bottom: 0; height: 62%; }
     #ana .abody { flex-direction: column; overflow-y: auto; }
@@ -269,6 +282,7 @@
     <header>
       <h1 id="title">Quy hoạch khu Gò Sếu</h1>
       <div class="sub" id="subtitle">Đang tải dữ liệu…</div>
+      <button id="panelClose" type="button" aria-label="Ẩn bảng điều khiển" title="Ẩn menu">✕</button>
       <button id="noteBtn" type="button" hidden aria-label="Ghi chú về dữ liệu" aria-expanded="false" title="Ghi chú về dữ liệu">!</button>
     </header>
     <div id="notePop" role="dialog" aria-label="Ghi chú về dữ liệu" hidden></div>
@@ -301,6 +315,7 @@
       </details>
     </div>
   </aside>
+  <div id="scrim" aria-hidden="true"></div>
   <div id="main">
     <div id="map"></div>
     <div id="attr" hidden>
@@ -1625,6 +1640,19 @@ $('anCtl').addEventListener('change', e => {
 });
 $('anCtl').addEventListener('click', e => { if (e.target.id === 'anGo') anStart(); else if (e.target.id === 'ovGo') anOverlay(); });
 $('toggle').addEventListener('click', () => $('panel').classList.toggle('open'));
+/* Di động: nút ✕, chạm vùng tối hoặc vuốt sang trái để ẩn menu */
+(function initMobilePanel() {
+  const panel = $('panel'), close = () => panel.classList.remove('open');
+  $('panelClose').addEventListener('click', close);
+  $('scrim').addEventListener('click', close);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && panel.classList.contains('open')) close(); });
+  let x0 = null, y0 = 0;
+  panel.addEventListener('touchstart', e => { const t = e.touches[0]; x0 = t.clientX; y0 = t.clientY; }, { passive: true });
+  panel.addEventListener('touchend', e => {
+    if (x0 === null) return; const t = e.changedTouches[0], dx = t.clientX - x0, dy = t.clientY - y0; x0 = null;
+    if (dx < -70 && Math.abs(dy) < Math.abs(dx) * .6 && !e.target.closest('input[type=range]')) close();
+  }, { passive: true });
+})();
 $('expandAll').addEventListener('click', () => document.querySelectorAll('#layers .node').forEach(n => n.classList.add('open')));
 $('collapseAll').addEventListener('click', () => document.querySelectorAll('#layers .node').forEach(n => n.classList.remove('open')));
 $('aLayer').addEventListener('change', e => { A.def = byId[e.target.value]; A.sort = null; A.q = ''; $('aFilter').value = ''; renderAttr(); });
