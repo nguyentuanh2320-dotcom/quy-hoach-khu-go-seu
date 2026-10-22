@@ -674,14 +674,26 @@ function styleOf(def, f) {
   if (def.geom === 'line') return { color: c, weight: def.weight, opacity: k, dashArray: def.dash || null, lineCap: def.dash ? 'butt' : 'round' };
   return { radius: def.radius, color: '#fff', weight: 1, opacity: k, fillColor: c, fillOpacity: k };
 }
+// Tất cả lớp vẽ chung 1 canvas (1 pane) thay vì mỗi lớp 1 canvas toàn màn hình → zoom/kéo nhanh hơn nhiều.
+// Thứ tự chồng lớp do fixOrder() giữ theo def.order.
+let VEC = null;
 function initGroup(def) {
-  const pane = map.createPane('p_' + def.id);
-  pane.style.zIndex = 410 + def.order;
-  const renderer = L.canvas({ pane, padding: 0.3 });
+  if (!VEC) {
+    const pane = map.createPane('vec'); pane.style.zIndex = 410;
+    VEC = L.canvas({ pane, padding: 0.12 });
+  }
   def.gl = L.geoJSON(null, {
-    pane, renderer, interactive: false,
+    pane: 'vec', renderer: VEC, interactive: false,
     style: f => styleOf(def, f),
-    pointToLayer: (f, ll) => L.circleMarker(ll, { pane, renderer, interactive: false })
+    pointToLayer: (f, ll) => L.circleMarker(ll, { pane: 'vec', renderer: VEC, interactive: false })
+  });
+}
+let orderQ = false;
+function fixOrder() {
+  if (orderQ) return; orderQ = true;
+  requestAnimationFrame(() => {
+    orderQ = false;
+    defs.filter(d => d.on && d._drawn).sort((a, b) => a.order - b.order).forEach(d => d.gl.eachLayer(l => l.bringToFront()));
   });
 }
 const visibleFeats = def => def.feats.filter(f => !def.hidden.has(f._cat));
@@ -689,10 +701,11 @@ function redraw(def) {
   def.gl.clearLayers();
   def.gl.addData({ type: 'FeatureCollection', features: visibleFeats(def) });
   def._lgDirty = true;
+  if (def.on && def._drawn) fixOrder();
 }
 function setOn(def, on) {
   def.on = on;
-  if (on) { if (!def._drawn) { redraw(def); def._drawn = true; } def.gl.addTo(map); }
+  if (on) { if (!def._drawn) { redraw(def); def._drawn = true; } def.gl.addTo(map); fixOrder(); }
   else map.removeLayer(def.gl);
   document.querySelectorAll(`.lyr[data-id="${def.id}"]`).forEach(row => { row.querySelector('.lab input').checked = on; });
   def.groups.forEach(syncGroup);
