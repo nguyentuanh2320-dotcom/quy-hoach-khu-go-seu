@@ -143,12 +143,14 @@
   /* Nhãn trên bản đồ */
   .lbl { background: transparent; border: 0; }
   .lbl > span { position: absolute; transform: translate(-50%, -50%); white-space: nowrap; pointer-events: none; line-height: 1.2; }
-  .lbl-lot > span { font-size: 10px; font-weight: 600; color: #111; text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; }
+  .lbl-canvas { position: absolute; pointer-events: none; }
+  .lbl-lot > span, .lbl-sm > span { text-shadow: 1px 0 #fff, -1px 0 #fff, 0 1px #fff, 0 -1px #fff, 1px 1px #fff, -1px -1px #fff; }
+  .lbl-lot > span { font-size: 10px; font-weight: 600; color: #111; }
   .lbl-lot .full { display: none; }
   .z-close .lbl-lot .full { display: inline; }
   .z-close .lbl-lot .short { display: none; }
   .lbl-badge > span { background: #fff; color: #111; border: 1px solid #111; border-radius: 999px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
-  .lbl-sm > span { font-size: 10px; font-weight: 600; color: var(--c, #333); text-shadow: 0 0 3px #fff, 0 0 3px #fff, 0 0 3px #fff; }
+  .lbl-sm > span { font-size: 10px; font-weight: 600; color: var(--c, #333); }
   .lbl-ms > span { background: #d6336c; color: #fff; border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 600; }
   .leaflet-control-home { background: #fff; width: 30px; height: 30px; line-height: 30px; text-align: center; font-size: 17px; color: #333; cursor: pointer; display: block; text-decoration: none; }
   .leaflet-control-home:hover { background: #f4f4f4; }
@@ -370,7 +372,7 @@ const LAYERS = [
   { id: 'PhanVungSanNen_A', group: 'San nền', title: 'Phân vùng san nền', geom: 'polygon', cat: 'phanLoai', stroke: '#b45f06', weight: 1.2, fillOpacity: .4, hitPri: 3,
     label: { html: p => p.phanLoai, cls: 'lbl-badge', min: 0, max: 99 }, search: 'phanLoai', key: p => p.phanLoai },
   { id: 'ChucNangSuDungDat_A', group: 'Quy hoạch', title: 'Lô đất chức năng', geom: 'polygon', on: true, cat: 'phanLoai', colors: LAND, stroke: '#666', weight: .8, fillOpacity: .75, hitPri: 1,
-    label: { html: p => p.kyHieuLoDat ? `<span class="full">${esc(p.kyHieuLoDat)}</span><span class="short">${esc(lotShort(p) || p.kyHieuLoDat)}</span>` : null, raw: true, cls: 'lbl-lot', min: 19, max: 99 },
+    label: { html: p => p.kyHieuLoDat, txt: (p, close) => isEmpty(p.kyHieuLoDat) ? null : (close ? String(p.kyHieuLoDat) : String(lotShort(p) || p.kyHieuLoDat)), cls: 'lbl-lot', min: 19, max: 99 },
     search: 'kyHieuLoDat', key: p => p.kyHieuLoDat },
   { id: 'KhongGianKTCQ_A', group: 'Cảnh quan', title: 'Không gian kiến trúc cảnh quan', geom: 'polygon', on: true, cat: 'ghiChu',
     catNames: { 'Sân_đường': 'Sân, đường nội bộ', 'Cây xanh - thảm cỏ': 'Cây xanh, thảm cỏ' }, colors: { 'Sân, đường nội bộ': '#e3d9c6', 'Cây xanh, thảm cỏ': '#a8d98f' },
@@ -727,27 +729,76 @@ function zoomLayer(def) {
   if (!def.on) setOn(def, true);
 }
 
-/* ===================== NHÃN ===================== */
+/* ===================== NHÃN =====================
+   Vẽ toàn bộ nhãn lên MỘT canvas (thay vì hàng trăm phần tử HTML) → kéo/zoom mượt.
+   Canvas phủ rộng hơn khung nhìn 1 khoảng đệm, vẽ lại khi dừng kéo/zoom; ẩn trong lúc zoom động. */
+const LBL = { cv: null, pad: 0.35, q: false };
+function initLabelCanvas() {
+  if (LBL.cv) return;
+  LBL.cv = L.DomUtil.create('canvas', 'lbl-canvas', map.getPane('labels'));
+  map.on('moveend zoomend resize viewreset', drawLabels);
+  map.on('zoomstart', () => { LBL.cv.style.visibility = 'hidden'; });
+  map.on('zoomend', () => { LBL.cv.style.visibility = ''; });
+}
+function labelText(lb, p, close) {
+  if (lb.txt) return lb.txt(p, close);
+  const h = lb.html(p); return isEmpty(h) ? null : String(h);
+}
 function updateLabels() {
+  initLabelCanvas();
   const z = map.getZoom();
   map.getContainer().classList.toggle('z-close', z >= 20);
   defs.forEach(def => {
     if (!def.label || !def.gl) return;
     const lb = def.label;
-    const want = def.on && S.labels && z >= lb.min && z < lb.max;
-    if (!want) { if (def._lg && map.hasLayer(def._lg)) map.removeLayer(def._lg); return; }
-    if (!def._lg || def._lgDirty) {
-      if (def._lg) map.removeLayer(def._lg);
-      def._lg = L.layerGroup();
+    def._lgOn = def.on && S.labels && z >= lb.min && z < lb.max;
+    if (!def._lgOn) return;
+    if (!def._li || def._lgDirty) {
+      def._li = [];
       visibleFeats(def).forEach(f => {
-        const h = lb.html(f.properties);
-        if (isEmpty(h)) return;
-        const html = lb.raw ? h : `<span style="--c:${lb.color || '#333'}">${esc(h)}</span>`;
-        L.marker(labelPoint(f.geometry), { pane: 'labels', interactive: false, keyboard: false, icon: L.divIcon({ className: 'lbl ' + lb.cls, html, iconSize: [0, 0] }) }).addTo(def._lg);
+        const p = f.properties;
+        if (isEmpty(labelText(lb, p, false)) && isEmpty(labelText(lb, p, true))) return;
+        def._li.push({ ll: L.latLng(labelPoint(f.geometry)), p });
       });
       def._lgDirty = false;
     }
-    if (!map.hasLayer(def._lg)) def._lg.addTo(map);
+  });
+  drawLabels();
+}
+function drawLabels() {
+  if (!LBL.cv || LBL.q) return; LBL.q = true;
+  requestAnimationFrame(() => { LBL.q = false; drawLabelsNow(); });
+}
+function drawLabelsNow() {
+  const cv = LBL.cv, sz = map.getSize(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const px = Math.round(sz.x * LBL.pad), py = Math.round(sz.y * LBL.pad);
+  const W = sz.x + 2 * px, H = sz.y + 2 * py;
+  const origin = map.containerPointToLayerPoint([-px, -py]);
+  L.DomUtil.setPosition(cv, origin);
+  if (cv.width !== W * dpr || cv.height !== H * dpr) { cv.width = W * dpr; cv.height = H * dpr; cv.style.width = W + 'px'; cv.style.height = H + 'px'; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, cv.width, cv.height); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineJoin = 'round';
+  const FONT = 'system-ui, -apple-system, "Segoe UI", Roboto, sans-serif';
+  const z = map.getZoom(), close = z >= 20;
+  const bd = L.latLngBounds(map.containerPointToLatLng([-px, sz.y + py]), map.containerPointToLatLng([sz.x + px, -py]));
+  defs.filter(d => d._lgOn && d._li).sort((a, b) => a.order - b.order).forEach(def => {
+    const lb = def.label, badge = lb.cls === 'lbl-badge';
+    ctx.font = badge ? `700 11px ${FONT}` : `600 10px ${FONT}`;
+    def._li.forEach(it => {
+      if (!bd.contains(it.ll)) return;
+      const t = labelText(lb, it.p, close); if (isEmpty(t)) return;
+      const c = map.latLngToContainerPoint(it.ll), x = c.x + px, y = c.y + py;
+      if (badge) {
+        const w = ctx.measureText(t).width + 14, h = 16;
+        ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - w / 2, y - h / 2, w, h, 8) : ctx.rect(x - w / 2, y - h / 2, w, h);
+        ctx.fillStyle = '#fff'; ctx.fill(); ctx.lineWidth = 1; ctx.strokeStyle = '#111'; ctx.stroke();
+        ctx.fillStyle = '#111'; ctx.fillText(t, x, y + .5);
+      } else {
+        ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(255,255,255,.95)'; ctx.strokeText(t, x, y);
+        ctx.fillStyle = lb.color || (lb.cls === 'lbl-lot' ? '#111' : '#333'); ctx.fillText(t, x, y);
+      }
+    });
   });
 }
 
