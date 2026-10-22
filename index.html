@@ -171,6 +171,47 @@
     .leaflet-touch .leaflet-bar a { width: 36px; height: 36px; line-height: 36px; }
   }
   @media (min-width: 701px) and (max-width: 1100px) { :root { --panel-w: 300px; } }
+  /* ===== Quản trị ===== */
+  .adm-only { display: none !important; }
+  body.is-admin .adm-only { display: inline-block !important; }
+  #toolbar .tb.active[data-tool=admin] { color: #fff; background: #2f9e44; }
+  .pp summary .adm, #info summary .adm { color: #1f6feb; }
+  #info summary .adm.del { color: #c92a2a; }
+  #dlg { position: fixed; inset: 0; z-index: 3000; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  #dlg[hidden] { display: none; }
+  #dlg .card { background: var(--bg); color: var(--fg); border-radius: 10px; width: min(420px, 100%); max-height: 88vh; overflow-y: auto; padding: 18px 20px; box-shadow: 0 6px 30px rgba(0,0,0,.4); }
+  #dlg .card.wide { width: min(760px, 100%); }
+  #dlg h2 { margin: 0 0 8px; font-size: 17px; }
+  #dlg p { margin: 6px 0 10px; }
+  #dlg .muted, .muted { color: var(--muted); font-size: 12.5px; }
+  #dlg .fld { display: block; margin: 10px 0; }
+  #dlg .fld span { display: block; font-size: 12.5px; color: var(--muted); margin-bottom: 3px; }
+  #dlg input[type=email], #dlg input[type=password], #dlg input[type=text], #dlg select, #dlg .fadd input, #dlg .fl { width: 100%; box-sizing: border-box; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; }
+  .dlg-act { display: flex; gap: 8px; justify-content: flex-end; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+  .dlg-act .sp { flex: 1; }
+  .btn.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; }
+  .btn.danger { background: #c92a2a; border-color: #c92a2a; color: #fff; }
+  .btn:disabled { opacity: .6; cursor: default; }
+  .dlg-err { background: #fff0f0; color: #a61e1e; border: 1px solid #f5c2c2; border-radius: 6px; padding: 6px 9px; margin-top: 8px; font-size: 13px; }
+  .adm-help { margin: 4px 0 10px; padding-left: 18px; font-size: 13px; } .adm-help li { margin: 4px 0; } .adm-help svg { vertical-align: -3px; }
+  .fwrap { max-height: 46vh; overflow: auto; border: 1px solid var(--line); border-radius: 6px; }
+  .ftab { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .ftab th { position: sticky; top: 0; z-index: 1; background: var(--bg2); text-align: left; padding: 6px 8px; font-weight: 600; white-space: nowrap; }
+  .ftab td { padding: 4px 8px; border-top: 1px solid var(--line); vertical-align: middle; }
+  .ftab td.c { text-align: center; width: 1%; white-space: nowrap; }
+  .ftab .fl { padding: 4px 7px; }
+  .ftab tr.gone td { opacity: .45; } .ftab tr.gone code { text-decoration: line-through; }
+  .ftab .tag { background: #d3f9d8; color: #2b8a3e; border-radius: 4px; padding: 0 5px; font-size: 11px; }
+  .fadd { display: grid; grid-template-columns: auto 1fr 1fr auto; gap: 6px; align-items: center; margin-top: 10px; font-size: 13px; }
+  .edit-form { margin: 4px 0 8px; font-size: 13px; }
+  .edit-form .ef-meta { color: #6b7785; font-size: 12px; margin-bottom: 4px; }
+  .edit-form .ef-row { display: grid; grid-template-columns: 42% 1fr; gap: 6px; align-items: center; padding: 2px 0; }
+  .edit-form .ef-row span { color: #52606d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .edit-form .ef-row.hid span { color: #98a2ad; } .edit-form i { font-style: normal; font-size: 11px; }
+  .edit-form input, .edit-form textarea { width: 100%; box-sizing: border-box; padding: 4px 6px; border: 1px solid #cfd6dd; border-radius: 5px; font: inherit; background: #fff; color: #1f2933; }
+  .edit-form .ef-act { display: flex; justify-content: flex-end; gap: 6px; margin-top: 8px; position: sticky; bottom: 0; background: #fff; padding: 6px 0 2px; }
+  @media (max-width: 700px) { .fadd { grid-template-columns: 1fr; } .ftab th:nth-child(4), .ftab td:nth-child(4) { display: none; } }
+  @media print { #dlg { display: none !important; } }
   /* Bảng thông tin (kiểu cổng quy hoạch) */
   #info { position: absolute; z-index: 850; top: 58px; right: 10px; width: 340px; max-height: calc(100% - 100px); display: flex; flex-direction: column; background: #fff; color: #1f2933; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,.4); overflow: hidden; }
   #info[hidden] { display: none; }
@@ -328,6 +369,7 @@
         <button class="btn" id="aZoom">Phóng tới lớp</button>
         <button class="btn" id="aCsv">Tải CSV</button>
         <button class="btn" id="aGeo">Tải GeoJSON</button>
+        <button class="btn adm-only" id="aFields" title="Thêm / xóa / ẩn hiện trường thuộc tính của lớp">Quản lý trường</button>
         <button class="btn" id="aClose" aria-label="Đóng">✕</button>
       </div>
       <div class="awrap"><table id="aTable"></table></div>
@@ -368,7 +410,11 @@ const CONFIG = {
   SUBTITLE: 'Bản đồ quy hoạch · hồ sơ 93QPK00701',
   CORE: ['ChucNangSuDungDat_A', 'PhanOQuyHoach_A'],   // lớp xác định phạm vi khu vực (zoom ban đầu + lọc điểm lạc)
   EXTENT_BUFFER_DEG: 0.01,                              // ~1 km: đối tượng nằm ngoài phạm vi + đệm này bị ẩn
-  SAT_NATIVE_ZOOM: 17                                   // ảnh vệ tinh Esri khu vực này chỉ có đến mức 17
+  SAT_NATIVE_ZOOM: 17,                                  // ảnh vệ tinh Esri khu vực này chỉ có đến mức 17
+  // Chế độ quản trị (Supabase). Để trống = tắt chức năng đăng nhập / sửa dữ liệu.
+  // anon key là khoá công khai (ai xem trang cũng thấy) — quyền sửa được bảo vệ bằng Row Level Security trên Supabase.
+  SUPABASE_URL: 'https://adazbhfiifgrugbuotlj.supabase.co',
+  SUPABASE_ANON_KEY: 'sb_publishable_vuhRBfE9YCbjURnkwWaTYA_jsTbU-xw'
 };
 
 const LAND = {
@@ -540,7 +586,11 @@ const ICON = {
   help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 1-1 1.7M12 17h.01"/>',
   copy: '<rect x="9" y="9" width="11" height="11" rx="1"/><path d="M5 15V5h10"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
-  locate: '<circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>'
+  locate: '<circle cx="12" cy="12" r="3"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13 7l4 4"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
 };
 const svg = (p, s = 17) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
 function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; }
@@ -671,6 +721,9 @@ function ingest(def) {
   def.raw = null;
   def.empty = !def.error && def.feats.length === 0 && def.outside === 0;
   def.loaded = true;
+  computeCats(def);
+}
+function computeCats(def) {
   if (def.cat) {
     const m = new Map();
     def.feats.forEach(f => {
@@ -857,8 +910,8 @@ function rowsOf(def, f) {
   const p = f.properties, rows = [];
   if (def.cat && !isEmpty(f._cat) && (def.cat !== 'phanLoai' || !(def.key && def.key(p) === f._cat))) rows.push(['Loại', String(f._cat), true]);
   for (const [k, v] of Object.entries(p)) {
-    if (isEmpty(v) || (HIDE.has(k) && !(k === 'ghiChu' && def.showNote)) || k === def.cat) continue;
-    rows.push([(FIELDS[k] || [k])[0], fmtVal(k, v)]);
+    if (isEmpty(v) || fieldHidden(def, k) || k === def.cat) continue;
+    rows.push([fieldLabel(def, k), fmtVal(k, v)]);
   }
   if (def.geom === 'polygon' && isEmpty(p.dienTich) && !isEmpty(p.Shape_Area)) rows.push(['Diện tích (hình học)', nf(p.Shape_Area, 1) + ' m²']);
   if (def.geom === 'line' && isEmpty(p.chieuDai) && !isEmpty(p.Shape_Length)) rows.push(['Chiều dài (hình học)', nf(p.Shape_Length, 1) + ' m']);
@@ -868,7 +921,7 @@ const keyOf = (def, f) => def.key ? def.key(f.properties) : f._cat;
 function sectionHtml(def, f, open, idx) {
   const key = keyOf(def, f);
   const rows = rowsOf(def, f).map(r => `<tr><td>${esc(r[0])}</td><td>${r[2] ? '<b>' + esc(r[1]) + '</b>' : esc(r[1])}</td></tr>`).join('');
-  return `<details${open ? ' open' : ''} data-i="${idx}"><summary>${esc(def.title)}${isEmpty(key) ? '' : ` <small>· ${esc(key)}</small>`}<button class="ib zb" data-a="zoom" data-i="${idx}" title="Phóng tới đối tượng">${svg(ICON.zoom, 15)}</button></summary><table class="popup-table">${rows}</table></details>`;
+  return `<details${open ? ' open' : ''} data-i="${idx}"><summary>${esc(def.title)}${isEmpty(key) ? '' : ` <small>· ${esc(key)}</small>`}<button class="ib zb" data-a="zoom" data-i="${idx}" title="Phóng tới đối tượng">${svg(ICON.zoom, 15)}</button>${DB.admin ? `<button class="ib zb adm" data-a="edit" data-i="${idx}" title="Sửa thuộc tính">${svg(ICON.edit, 15)}</button><button class="ib zb adm del" data-a="del" data-i="${idx}" title="Xóa đối tượng">${svg(ICON.trash, 15)}</button>` : ''}</summary><table class="popup-table">${rows}</table></details>`;
 }
 let hl = null;
 function clearHL() { if (hl) { map.removeLayer(hl); hl = null; } }
@@ -929,7 +982,7 @@ function layerNode(def, g = def.group) {
   if (def.cats && def.cats.length > 1) {
     const c = n.querySelector('.cats');
     def.cats.forEach(cat => {
-      const l = el('label', 'cat-row', `<input type="checkbox" checked><span class="swatch" style="background:${cat.color}"></span><span class="nm">${esc(cat.name)}</span><span class="meta">${fmtN(cat.n)}</span>`);
+      const l = el('label', 'cat-row', `<input type="checkbox"${def.hidden.has(cat.name) ? '' : ' checked'}><span class="swatch" style="background:${cat.color}"></span><span class="nm">${esc(cat.name)}</span><span class="meta">${fmtN(cat.n)}</span>`);
       l.querySelector('input').addEventListener('change', e => {
         if (e.target.checked) def.hidden.delete(cat.name); else def.hidden.add(cat.name);
         const ci = def.cats.indexOf(cat), v = e.target.checked;
@@ -1311,7 +1364,7 @@ function closeAttr() { $('attr').hidden = true; document.querySelector('[data-to
 function renderAttr() {
   const def = A.def; if (!def) return;
   const seen = new Set(), cols = [];
-  def.feats.forEach(f => Object.keys(f.properties).forEach(k => { if (!seen.has(k) && !ATTR_HIDE.has(k) && !isEmpty(f.properties[k])) { seen.add(k); cols.push(k); } }));
+  def.feats.forEach(f => Object.keys(f.properties).forEach(k => { if (!seen.has(k) && !attrHidden(def, k) && (!isEmpty(f.properties[k]) || DB.admin)) { seen.add(k); cols.push(k); } }));
   A.cols = cols;
   const q = A.q.toLowerCase();
   let rows = def.feats.filter(f => !q || cols.some(k => !isEmpty(f.properties[k]) && String(f.properties[k]).toLowerCase().includes(q)));
@@ -1326,7 +1379,7 @@ function renderAttr() {
   }
   A.rows = rows;
   const LIM = 1500, shown = rows.slice(0, LIM);
-  const label = k => (FIELDS[k] || [k])[0];
+  const label = k => fieldLabel(def, k);
   const arrow = k => A.sort && A.sort.k === k ? (A.sort.dir > 0 ? ' ▲' : ' ▼') : '';
   $('aTable').innerHTML = `<thead><tr>${cols.map(k => `<th data-k="${esc(k)}" title="${esc(k)}">${esc(label(k))}${arrow(k)}</th>`).join('')}</tr></thead><tbody>${shown.map((f, i) => `<tr data-i="${i}">${cols.map(k => { const v = f.properties[k]; return `<td>${isEmpty(v) ? '' : esc(typeof v === 'number' ? nf(v, 2) : v)}</td>`; }).join('')}</tr>`).join('')}</tbody>`;
   $('aCount').textContent = `${fmtN(rows.length)} / ${fmtN(def.feats.length)} đối tượng${rows.length > LIM ? ` (hiển thị ${fmtN(LIM)} dòng đầu)` : ''}`;
@@ -1473,7 +1526,8 @@ function initMap() {
     <button class="tb" data-tool="full" title="Toàn màn hình">${svg(ICON.full)}</button>
     <button class="tb" data-tool="print" title="In bản đồ">${svg(ICON.print)}</button>
     <button class="tb" data-tool="share" title="Sao chép liên kết (giữ nguyên vị trí và lớp đang bật)">${svg(ICON.link)}</button>
-    <button class="tb" data-tool="help" title="Hướng dẫn sử dụng">${svg(ICON.help)}</button>`;
+    <button class="tb" data-tool="help" title="Hướng dẫn sử dụng">${svg(ICON.help)}</button>
+    <button class="tb" data-tool="admin" id="admBtn" title="Đăng nhập quản trị"${dbOn() ? '' : ' hidden'}>${svg(ICON.lock)}<span class="t">Đăng nhập</span></button>`;
   const mbox = el('div', ''); mbox.id = 'mbox'; mbox.hidden = true;
   const st = el('div', '', ''); st.id = 'status'; st.title = 'Bấm để sao chép toạ độ';
   const ts = el('div', ''); ts.id = 'toast';
@@ -1491,6 +1545,8 @@ function initMap() {
       else if (k === 'report') printReport();
       else if (k === 'buffer') { AN.src = 'feature'; openAna('q'); anStart(); }
       else if (k === 'copy') { const t = infoText(), ok = () => toast('Đã sao chép thuộc tính'); if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(ok, () => fallbackCopy(t, ok)); else fallbackCopy(t, ok); }
+      else if (k === 'edit') { const h = INFO.hits[+a.dataset.i]; if (h) admEditForm(h, +a.dataset.i); }
+      else if (k === 'del') { const h = INFO.hits[+a.dataset.i]; if (h) admDeleteFeature(h.def, h.f); }
       else if (k === 'zoom') { const h = INFO.hits[+a.dataset.i]; if (h) { S.userMoved = true; map.fitBounds(L.geoJSON(h.f).getBounds(), { maxZoom: 20, padding: [80, 80] }); setHighlight(h.f); } }
       return;
     }
@@ -1511,6 +1567,7 @@ function initMap() {
     else if (t === 'ana') { $('ana').hidden ? openAna() : closeAna(); }
     else if (t === 'legend') { const g = $('legend'); g.hidden = !g.hidden; b.classList.toggle('active', !g.hidden); }
     else if (t === 'help') { $('help').hidden = false; }
+    else if (t === 'admin') { DB.admin ? admMenu() : admLoginDlg(); }
   });
   mbox.addEventListener('click', e => { if (e.target.id === 'mDone') measureFinish(); if (e.target.id === 'mClear') measureClear(); });
   map.on('locationfound', e => {
@@ -1564,7 +1621,8 @@ async function main() {
   // Thứ tự tải: lớp lõi → lớp bật sẵn → các lớp còn lại (trình duyệt xếp hàng theo thứ tự gọi)
   const order = [...CONFIG.CORE.map(id => byId[id]), ...defs.filter(d => !CONFIG.CORE.includes(d.id) && wantOn(d)), ...defs.filter(d => !CONFIG.CORE.includes(d.id) && !wantOn(d))];
   const total = order.length; let done = 0;
-  const P = new Map(order.map(d => [d, loadLayer(d).then(r => { d.raw = r; })]));
+  const dbReady = dbLoad();
+  const P = new Map(order.map(d => [d, Promise.all([loadLayer(d), dbReady]).then(([r]) => { d.raw = applyEdits(d, r); })]));
   const finish = d => {
     ingest(d); onLoaded(d);
     if (!d.error && !d.empty && wantOn(d)) setOn(d, true);
@@ -1595,6 +1653,7 @@ async function main() {
   rest.forEach(d => P.get(d).then(() => finish(d)));
   await Promise.all(rest.map(d => P.get(d)));
   hashReady = true; syncHash();
+  if (DB.loadError) toast('Không tải được dữ liệu chỉnh sửa: ' + DB.loadError);
 }
 
 /* ===================== SỰ KIỆN GIAO DIỆN ===================== */
@@ -1667,6 +1726,327 @@ $('aTable').addEventListener('click', e => {
   document.querySelectorAll('#aTable tr.sel').forEach(r => r.classList.remove('sel')); tr.classList.add('sel');
   gotoFeature(A.def, f);
 });
+/* ===================== QUẢN TRỊ (Supabase) =====================
+   - Ai cũng ĐỌC được các chỉnh sửa (bảng feature_edits, layer_schema) → bản đồ luôn hiện dữ liệu mới nhất.
+   - Chỉ tài khoản có trong bảng admins mới GHI được (Row Level Security phía Supabase chặn mọi người khác).
+   - Không dùng thư viện ngoài: gọi thẳng REST API của Supabase (Auth + PostgREST). */
+const DB = {
+  url: String(CONFIG.SUPABASE_URL || '').replace(/\/+$/, ''), key: CONFIG.SUPABASE_ANON_KEY || '',
+  session: null, admin: false, edits: new Map(), schema: {}, loadError: null
+};
+const LOCKED = new Set(['OBJECTID', 'Shape_Length', 'Shape_Area']);   // trường hệ thống: không sửa / không xóa
+const SS_KEY = 'goseu_admin_session';
+function dbOn() { return !!(DB.url && DB.key); }
+const oidOf = f => (f.properties && f.properties.OBJECTID != null) ? f.properties.OBJECTID : f.id;
+const editKey = (layer, oid) => layer + '#' + oid;
+
+async function dbFetch(path, { method = 'GET', body, auth = false, prefer, timeout = 15000 } = {}) {
+  if (auth) await dbFreshen();
+  const h = { apikey: DB.key };
+  if (auth && DB.session) h.Authorization = 'Bearer ' + DB.session.access_token;   // khách: chỉ gửi apikey (hợp lệ với cả khoá anon cũ lẫn publishable mới)
+  if (body !== undefined) h['Content-Type'] = 'application/json';
+  if (prefer) h.Prefer = prefer;
+  const ac = new AbortController(), to = setTimeout(() => ac.abort(), timeout);
+  let r;
+  try { r = await fetch(DB.url + path, { method, headers: h, body: body === undefined ? undefined : JSON.stringify(body), signal: ac.signal }); }
+  catch (e) { throw new Error(e.name === 'AbortError' ? 'hết thời gian chờ máy chủ' : 'không kết nối được máy chủ'); }
+  finally { clearTimeout(to); }
+  const txt = await r.text(); let j = null; try { j = txt ? JSON.parse(txt) : null; } catch (e) { /* không phải JSON */ }
+  if (!r.ok) {
+    const m = (j && (j.error_description || j.msg || j.message || j.error)) || ('HTTP ' + r.status);
+    const err = new Error(r.status === 401 || r.status === 403 || /row-level security|permission denied/i.test(m) ? 'Không có quyền thực hiện (cần đăng nhập tài khoản quản trị)' : m);
+    err.status = r.status; throw err;
+  }
+  return j;
+}
+
+/* ---------- Tải chỉnh sửa lúc mở trang (tối đa 6 s, lỗi thì vẫn hiện dữ liệu gốc) ---------- */
+function dbLoad() {
+  if (!dbOn()) return Promise.resolve();
+  const job = Promise.all([
+    dbFetch('/rest/v1/feature_edits?select=layer_id,oid,props,deleted&limit=100000').then(rows => (rows || []).forEach(r => DB.edits.set(editKey(r.layer_id, r.oid), r))),
+    dbFetch('/rest/v1/layer_schema?select=layer_id,cfg').then(rows => (rows || []).forEach(r => { DB.schema[r.layer_id] = r.cfg || {}; }))
+  ]).catch(e => { DB.loadError = e.message; });
+  return Promise.race([job, new Promise(r => setTimeout(() => { if (!DB.edits.size) DB.loadError = DB.loadError || 'máy chủ phản hồi chậm'; r(); }, 6000))]);
+}
+const cfgOf = def => DB.schema[def.id] || {};
+function applySchema(def, feats) {
+  const c = cfgOf(def);
+  (feats || []).forEach(f => {
+    (c.removed || []).forEach(k => { delete f.properties[k]; });
+    (c.added || []).forEach(a => { if (!(a.k in f.properties)) f.properties[a.k] = null; });
+  });
+}
+function applyEdits(def, feats) {
+  if (!feats) return feats;
+  const out = [];
+  for (const f of feats) {
+    const e = DB.edits.get(editKey(def.id, oidOf(f)));
+    if (e && e.deleted) continue;
+    if (e && e.props) f.properties = Object.assign({}, f.properties, e.props);
+    out.push(f);
+  }
+  applySchema(def, out);
+  return out;
+}
+
+/* ---------- Trường: nhãn, ẩn/hiện ---------- */
+function fieldLabel(def, k) { const c = cfgOf(def); return (c.labels && c.labels[k]) || (FIELDS[k] || [k])[0]; }
+function fieldHiddenDefault(def, k) { return HIDE.has(k) && !(k === 'ghiChu' && def.showNote); }
+function fieldHidden(def, k) { const c = cfgOf(def); if ((c.show || []).includes(k)) return false; if ((c.hide || []).includes(k)) return true; return fieldHiddenDefault(def, k); }
+function attrHidden(def, k) { const c = cfgOf(def); if ((c.show || []).includes(k)) return false; if ((c.hide || []).includes(k)) return true; return ATTR_HIDE.has(k); }
+function fieldsOf(def) { const seen = new Set(), out = []; def.feats.forEach(f => Object.keys(f.properties).forEach(k => { if (!seen.has(k)) { seen.add(k); out.push(k); } })); (cfgOf(def).added || []).forEach(a => { if (!seen.has(a.k)) { seen.add(a.k); out.push(a.k); } }); return out; }
+const fieldIsNum = (def, k) => def.feats.some(f => typeof f.properties[k] === 'number') || !!(FIELDS[k] && FIELDS[k][1]);
+const protectedField = (def, k) => LOCKED.has(k) || k === def.cat || k === def.search;
+
+/* ---------- Đăng nhập ---------- */
+function saveSession() { try { if (DB.session) localStorage.setItem(SS_KEY, JSON.stringify(DB.session)); else localStorage.removeItem(SS_KEY); } catch (e) { /* trình duyệt chặn lưu trữ */ } }
+function setSession(j) {
+  DB.session = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600), email: j.user && j.user.email, uid: j.user && j.user.id };
+  saveSession();
+}
+async function authToken(grant, body) {
+  const r = await fetch(`${DB.url}/auth/v1/token?grant_type=${grant}`, { method: 'POST', headers: { apikey: DB.key, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const m = j.error_description || j.msg || j.message || ('HTTP ' + r.status);
+    throw new Error(/invalid login credentials|invalid_grant/i.test(m + (j.error || '')) && grant === 'password' ? 'Sai email hoặc mật khẩu' : /email not confirmed/i.test(m) ? 'Email chưa được xác nhận' : m);
+  }
+  return j;
+}
+async function dbFreshen() {
+  if (!DB.session || DB.session.expires_at - 60 > Date.now() / 1000) return;
+  try { setSession(await authToken('refresh_token', { refresh_token: DB.session.refresh_token })); }
+  catch (e) { DB.session = null; DB.admin = false; saveSession(); admApplyUI(); throw new Error('Phiên đăng nhập đã hết hạn, hãy đăng nhập lại'); }
+}
+async function admCheck() {
+  const rows = await dbFetch(`/rest/v1/admins?select=user_id&user_id=eq.${encodeURIComponent(DB.session.uid)}`, { auth: true });
+  DB.admin = Array.isArray(rows) && rows.length > 0;
+  return DB.admin;
+}
+async function admLogin(email, password) {
+  setSession(await authToken('password', { email, password }));
+  if (!(await admCheck())) { await admLogout(true); throw new Error('Tài khoản này không có quyền quản trị'); }
+  admApplyUI();
+}
+async function admLogout(silent) {
+  const s = DB.session;
+  DB.session = null; DB.admin = false; saveSession(); admApplyUI();
+  if (s) fetch(DB.url + '/auth/v1/logout', { method: 'POST', headers: { apikey: DB.key, Authorization: 'Bearer ' + s.access_token } }).catch(() => {});
+  if (!silent) toast('Đã đăng xuất');
+}
+async function admRestore() {
+  if (!dbOn()) return;
+  let s = null; try { s = JSON.parse(localStorage.getItem(SS_KEY) || 'null'); } catch (e) { /* bỏ qua */ }
+  if (!s || !s.refresh_token) return;
+  DB.session = s;
+  try { await dbFreshen(); if (await admCheck()) admApplyUI(); else await admLogout(true); }
+  catch (e) { DB.session = null; DB.admin = false; saveSession(); admApplyUI(); }
+}
+function admApplyUI() {
+  document.body.classList.toggle('is-admin', DB.admin);
+  const b = $('admBtn');
+  if (b) { b.classList.toggle('active', DB.admin); b.innerHTML = `${svg(DB.admin ? ICON.user : ICON.lock)}<span class="t">${DB.admin ? 'Quản trị' : 'Đăng nhập'}</span>`; b.title = DB.admin ? `Đang đăng nhập: ${DB.session.email || ''}` : 'Đăng nhập quản trị'; }
+  if (INFO.hits.length) openInfo(INFO.ll, INFO.hits);   // vẽ lại popup để hiện/ẩn nút sửa, xóa
+  if (A.def && !$('attr').hidden) renderAttr();
+}
+
+/* ---------- Hộp thoại dùng chung ---------- */
+function dlg(html, { wide = false } = {}) {
+  let d = $('dlg');
+  if (!d) {
+    d = el('div', ''); d.id = 'dlg'; d.hidden = true; document.body.appendChild(d);
+    d.addEventListener('mousedown', e => { if (e.target === d) dlgClose(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && !d.hidden) dlgClose(); });
+  }
+  d.innerHTML = `<div class="card${wide ? ' wide' : ''}" role="dialog" aria-modal="true">${html}</div>`;
+  d.hidden = false;
+  const first = d.querySelector('input:not([type=checkbox]),select,textarea,button.primary'); if (first) setTimeout(() => first.focus(), 30);
+  return d.querySelector('.card');
+}
+function dlgClose() { const d = $('dlg'); if (d) { d.hidden = true; d.innerHTML = ''; } }
+function confirmDlg(title, msg, okText = 'Xóa') {
+  return new Promise(res => {
+    const c = dlg(`<h2>${esc(title)}</h2><p>${msg}</p><div class="dlg-act"><button class="btn" data-x="no">Hủy</button><button class="btn danger primary" data-x="ok">${esc(okText)}</button></div>`);
+    c.addEventListener('click', e => { const x = e.target.closest('[data-x]'); if (!x) return; dlgClose(); res(x.dataset.x === 'ok'); });
+  });
+}
+
+function admLoginDlg() {
+  const c = dlg(`<h2>Đăng nhập quản trị</h2><p class="muted">Chỉ tài khoản quản trị mới thêm, sửa, xóa được dữ liệu. Người xem bình thường không cần đăng nhập.</p>
+    <form id="lgForm" autocomplete="on"><label class="fld"><span>Email</span><input type="email" name="email" autocomplete="username" required></label>
+    <label class="fld"><span>Mật khẩu</span><input type="password" name="password" autocomplete="current-password" required></label>
+    <div class="dlg-err" hidden></div>
+    <div class="dlg-act"><button type="button" class="btn" data-x="cancel">Hủy</button><button type="submit" class="btn primary">Đăng nhập</button></div></form>`);
+  c.querySelector('[data-x=cancel]').addEventListener('click', dlgClose);
+  const form = c.querySelector('#lgForm'), err = c.querySelector('.dlg-err'), sub = form.querySelector('[type=submit]');
+  form.addEventListener('submit', async e => {
+    e.preventDefault(); err.hidden = true; sub.disabled = true; sub.textContent = 'Đang đăng nhập…';
+    try { await admLogin(form.email.value.trim(), form.password.value); dlgClose(); toast('Đã đăng nhập quản trị'); }
+    catch (ex) { err.textContent = ex.message; err.hidden = false; sub.disabled = false; sub.textContent = 'Đăng nhập'; }
+  });
+}
+function admMenu() {
+  const layers = defs.filter(d => d.loaded && !d.error && d.feats.length).sort((a, b) => a.title.localeCompare(b.title, 'vi'));
+  const c = dlg(`<h2>Quản trị dữ liệu</h2><p class="muted">Đang đăng nhập: <b>${esc(DB.session.email || '')}</b></p>
+    <ul class="adm-help"><li><b>Sửa / xóa đối tượng:</b> bấm vào đối tượng trên bản đồ → nút ${svg(ICON.edit, 14)} hoặc ${svg(ICON.trash, 14)} trong bảng thông tin.</li>
+    <li><b>Thêm / xóa / ẩn hiện trường:</b> chọn lớp bên dưới → “Quản lý trường” (hoặc nút cùng tên trong Bảng thuộc tính).</li>
+    <li><b>Xuất GeoJSON đã sửa:</b> trong “Quản lý trường” hoặc nút “Tải GeoJSON” của Bảng thuộc tính.</li></ul>
+    <label class="fld"><span>Lớp</span><select id="admLayer">${layers.map(d => `<option value="${d.id}">${esc(d.title)}</option>`).join('')}</select></label>
+    <div class="dlg-act"><button class="btn" data-x="out">Đăng xuất</button><span class="sp"></span><button class="btn" data-x="close">Đóng</button><button class="btn primary" data-x="fields">Quản lý trường</button></div>`);
+  c.addEventListener('click', e => {
+    const x = e.target.closest('[data-x]'); if (!x) return;
+    if (x.dataset.x === 'close') dlgClose();
+    else if (x.dataset.x === 'out') { dlgClose(); admLogout(); }
+    else if (x.dataset.x === 'fields') admFieldsDlg(byId[c.querySelector('#admLayer').value]);
+  });
+}
+
+/* ---------- Sau khi dữ liệu một lớp thay đổi: cập nhật mọi nơi đang hiển thị ---------- */
+function admRefreshLayer(def) {
+  def.feats.forEach(f => { f._bb = f._bb || bboxOf(f.geometry); });
+  computeCats(def);
+  def._lgDirty = true; def._li = null;
+  if (def._drawn) redraw(def);
+  document.querySelectorAll(`.lyr[data-id="${def.id}"]`).forEach(old => {
+    const n = layerNode(def, old.dataset.g); if (old.classList.contains('open')) n.classList.add('open');
+    old.replaceWith(n); n.querySelector('.lab input').checked = def.on;
+  });
+  searchIndex = searchIndex.filter(s => s.def !== def); addSearch(def);
+  updateLabels(); updateStats(); updateLegend();
+  if (A.def === def && !$('attr').hidden) renderAttr();
+}
+
+/* ---------- Sửa thuộc tính một đối tượng ---------- */
+function admEditForm(h, idx) {
+  const { def, f } = h, p = f.properties;
+  const keys = fieldsOf(def).filter(k => !LOCKED.has(k));
+  const sec = $('info').querySelector(`details[data-i="${idx}"]`); if (!sec) return;
+  sec.open = true;
+  const tbl = sec.querySelector('.popup-table, .edit-form'); if (!tbl) return;
+  const form = el('form', 'edit-form');
+  form.innerHTML = `<div class="ef-meta">OBJECTID ${esc(oidOf(f))}</div>` + keys.map(k => {
+    const v = p[k], num = fieldIsNum(def, k), long = !num && typeof v === 'string' && v.length > 40;
+    const inp = long ? `<textarea data-k="${esc(k)}" rows="2">${esc(v)}</textarea>` : `<input data-k="${esc(k)}" ${num ? 'type="number" step="any"' : 'type="text"'} value="${isEmpty(v) ? '' : esc(v)}">`;
+    return `<label class="ef-row${fieldHidden(def, k) ? ' hid' : ''}"><span title="${esc(k)}">${esc(fieldLabel(def, k))}${fieldHidden(def, k) ? ' <i>(ẩn)</i>' : ''}</span>${inp}</label>`;
+  }).join('') + `<div class="dlg-err" hidden></div><div class="ef-act"><button type="button" class="btn" data-x="cancel">Hủy</button><button type="submit" class="btn primary">Lưu</button></div>`;
+  tbl.replaceWith(form);
+  form.querySelector('[data-x=cancel]').addEventListener('click', () => openInfo(INFO.ll, INFO.hits));
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const err = form.querySelector('.dlg-err'), sub = form.querySelector('[type=submit]'); err.hidden = true;
+    const diff = {};
+    form.querySelectorAll('[data-k]').forEach(i => {
+      const k = i.dataset.k, raw = i.value.trim();
+      let v = raw === '' ? null : raw;
+      if (v !== null && fieldIsNum(def, k)) { const n = Number(raw.replace(',', '.')); if (isFinite(n)) v = n; }
+      const old = isEmpty(p[k]) ? null : p[k];
+      if (String(v) !== String(old)) diff[k] = v;
+    });
+    if (!Object.keys(diff).length) { openInfo(INFO.ll, INFO.hits); toast('Không có thay đổi'); return; }
+    sub.disabled = true; sub.textContent = 'Đang lưu…';
+    try { await admSaveFeature(def, f, diff); openInfo(INFO.ll, INFO.hits); toast(`Đã lưu ${Object.keys(diff).length} thay đổi`); }
+    catch (ex) { err.textContent = 'Không lưu được: ' + ex.message; err.hidden = false; sub.disabled = false; sub.textContent = 'Lưu'; }
+  });
+  const first = form.querySelector('[data-k]'); if (first) first.focus();
+}
+async function admSaveFeature(def, f, diff) {
+  const oid = oidOf(f), k = editKey(def.id, oid), prev = DB.edits.get(k);
+  const props = Object.assign({}, prev && prev.props, diff);
+  await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [{ layer_id: def.id, oid, props, deleted: false }] });
+  DB.edits.set(k, { layer_id: def.id, oid, props, deleted: false });
+  Object.assign(f.properties, diff);
+  admRefreshLayer(def);
+  if (INFO.hits.some(h => h.f === f)) setHighlight(f);
+}
+async function admDeleteFeature(def, f) {
+  const key = keyOf(def, f);
+  const ok = await confirmDlg('Xóa đối tượng?', `Xóa <b>${esc(def.title)}${isEmpty(key) ? '' : ' · ' + esc(key)}</b> (OBJECTID ${esc(oidOf(f))}) khỏi bản đồ cho mọi người xem.<br><span class="muted">Có thể khôi phục từ nhật ký thay đổi (bảng edit_log) trên Supabase.</span>`);
+  if (!ok) return;
+  const oid = oidOf(f), k = editKey(def.id, oid), prev = DB.edits.get(k);
+  try {
+    await dbFetch('/rest/v1/feature_edits?on_conflict=layer_id,oid', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [{ layer_id: def.id, oid, props: (prev && prev.props) || {}, deleted: true }] });
+  } catch (ex) { toast('Không xóa được: ' + ex.message); return; }
+  DB.edits.set(k, { layer_id: def.id, oid, props: (prev && prev.props) || {}, deleted: true });
+  def.feats = def.feats.filter(x => x !== f);
+  INFO.hits = INFO.hits.filter(h => h.f !== f);
+  admRefreshLayer(def);
+  if (INFO.hits.length) openInfo(INFO.ll, INFO.hits); else closeInfo();
+  toast('Đã xóa đối tượng');
+}
+
+/* ---------- Quản lý trường của một lớp ---------- */
+function admFieldsDlg(def) {
+  if (!def) return;
+  const c0 = cfgOf(def);
+  const st = { labels: Object.assign({}, c0.labels), added: (c0.added || []).map(a => Object.assign({}, a)), removed: [...(c0.removed || [])], vis: {}, del: new Set() };
+  const keys = fieldsOf(def);
+  keys.forEach(k => { st.vis[k] = !(fieldHidden(def, k) && attrHidden(def, k)); });
+  const vis0 = Object.assign({}, st.vis);
+  const filled = k => def.feats.filter(f => !isEmpty(f.properties[k])).length;
+  const card = dlg(`<h2>Quản lý trường · ${esc(def.title)}</h2>
+    <p class="muted">Bỏ chọn “Hiện” để ẩn trường khỏi bảng thông tin và bảng thuộc tính (dữ liệu vẫn giữ). “Tên hiển thị” để trống = dùng tên mặc định. Trường có khoá 🔒 là trường hệ thống / dùng để tô màu, tìm kiếm nên không xóa được.</p>
+    <div class="fwrap"><table class="ftab"><thead><tr><th>Trường</th><th>Tên hiển thị</th><th>Hiện</th><th>Có dữ liệu</th><th></th></tr></thead><tbody></tbody></table></div>
+    <div class="fadd"><b>Thêm trường mới</b><input id="faKey" placeholder="tenTruong (chữ không dấu, số, _)" maxlength="40"><input id="faLabel" placeholder="Tên hiển thị (VD: Chủ sở hữu)" maxlength="80"><button class="btn" id="faBtn">Thêm</button></div>
+    <div class="dlg-err" hidden></div>
+    <div class="dlg-act"><button class="btn" data-x="export" title="Tải toàn bộ đối tượng của lớp (kể cả trường đang ẩn) sau khi đã sửa">Xuất GeoJSON đã sửa</button><span class="sp"></span><button class="btn" data-x="cancel">Hủy</button><button class="btn primary" data-x="save">Lưu</button></div>`, { wide: true });
+  const tb = card.querySelector('tbody'), err = card.querySelector('.dlg-err');
+  const render = () => {
+    const all = [...keys, ...st.added.map(a => a.k).filter(k => !keys.includes(k))];
+    tb.innerHTML = all.map(k => {
+      const lock = protectedField(def, k), gone = st.del.has(k), isNew = st.added.some(a => a.k === k) && !keys.includes(k);
+      return `<tr data-k="${esc(k)}" class="${gone ? 'gone' : ''}"><td><code>${esc(k)}</code>${isNew ? ' <span class="tag">mới</span>' : ''}</td>
+        <td><input class="fl" value="${esc(st.labels[k] || '')}" placeholder="${esc((FIELDS[k] || [k])[0])}"${gone ? ' disabled' : ''}></td>
+        <td class="c"><input type="checkbox" class="fv"${st.vis[k] !== false ? ' checked' : ''}${gone ? ' disabled' : ''}></td>
+        <td class="c">${isNew ? 0 : filled(k)}</td>
+        <td class="c">${lock ? '🔒' : `<button class="ib fdel" title="${gone ? 'Bỏ xóa' : 'Xóa trường'}">${gone ? '↺' : svg(ICON.trash, 15)}</button>`}</td></tr>`;
+    }).join('');
+  };
+  render();
+  tb.addEventListener('input', e => { const tr = e.target.closest('tr'); if (!tr) return; const k = tr.dataset.k; if (e.target.classList.contains('fl')) st.labels[k] = e.target.value.trim(); });
+  tb.addEventListener('change', e => { const tr = e.target.closest('tr'); if (tr && e.target.classList.contains('fv')) st.vis[tr.dataset.k] = e.target.checked; });
+  tb.addEventListener('click', e => {
+    const b = e.target.closest('.fdel'); if (!b) return;
+    const k = b.closest('tr').dataset.k;
+    if (st.added.some(a => a.k === k) && !keys.includes(k)) { st.added = st.added.filter(a => a.k !== k); delete st.labels[k]; }
+    else if (st.del.has(k)) st.del.delete(k); else st.del.add(k);
+    render();
+  });
+  card.querySelector('#faBtn').addEventListener('click', () => {
+    const k = card.querySelector('#faKey').value.trim(), lb = card.querySelector('#faLabel').value.trim();
+    err.hidden = true;
+    if (!/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(k)) { err.textContent = 'Tên trường phải bắt đầu bằng chữ cái, chỉ gồm chữ không dấu, số và dấu _'; err.hidden = false; return; }
+    if (keys.includes(k) || st.added.some(a => a.k === k)) { err.textContent = 'Trường này đã có'; err.hidden = false; return; }
+    st.added.push({ k }); st.vis[k] = true; if (lb) st.labels[k] = lb;
+    card.querySelector('#faKey').value = ''; card.querySelector('#faLabel').value = '';
+    render();
+  });
+  card.addEventListener('click', async e => {
+    const x = e.target.closest('[data-x]'); if (!x) return;
+    if (x.dataset.x === 'cancel') { dlgClose(); return; }
+    if (x.dataset.x === 'export') { download(def.id + '_da_sua.geojson', JSON.stringify({ type: 'FeatureCollection', name: def.id, features: def.feats.map(f => ({ type: 'Feature', id: oidOf(f), properties: f.properties, geometry: f.geometry })) }), 'application/geo+json'); return; }
+    if (x.dataset.x !== 'save') return;
+    const dels = [...st.del];
+    if (dels.length && !(await confirmDlg('Xóa trường?', `Xóa ${dels.length} trường: <b>${dels.map(esc).join(', ')}</b> khỏi lớp “${esc(def.title)}” cho mọi người xem.`, 'Xóa và lưu'))) { admFieldsDlg(def); return; }
+    const hide = new Set(c0.hide || []), show = new Set(c0.show || []);
+    Object.entries(st.vis).forEach(([k, v]) => {
+      if (st.del.has(k) || v === vis0[k]) return;
+      if (v) { hide.delete(k); show.add(k); } else { show.delete(k); hide.add(k); }
+    });
+    const labels = {}; Object.entries(st.labels).forEach(([k, v]) => { if (v && !st.del.has(k)) labels[k] = v; });
+    const cfg = { labels, hide: [...hide].filter(k => !st.del.has(k)), show: [...show].filter(k => !st.del.has(k)), added: st.added.filter(a => !st.del.has(a.k)), removed: [...new Set([...st.removed, ...dels])].filter(k => !st.added.some(a => a.k === k)) };
+    try { await dbFetch('/rest/v1/layer_schema?on_conflict=layer_id', { method: 'POST', auth: true, prefer: 'resolution=merge-duplicates,return=minimal', body: [{ layer_id: def.id, cfg }] }); }
+    catch (ex) { if ($('dlg').hidden) admFieldsDlg(def); toast('Không lưu được: ' + ex.message); return; }
+    DB.schema[def.id] = cfg;
+    applySchema(def, def.feats);
+    dlgClose(); admRefreshLayer(def);
+    if (INFO.hits.some(h => h.def === def)) openInfo(INFO.ll, INFO.hits);
+    toast('Đã lưu cấu hình trường');
+  });
+}
+$('aFields').addEventListener('click', () => A.def && admFieldsDlg(A.def));
+admRestore();
+
 main();
 </script>
 </body>
