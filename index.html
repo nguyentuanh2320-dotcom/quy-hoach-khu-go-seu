@@ -1401,15 +1401,16 @@ function parseHash() {
   if (o.l !== undefined) o.layers = o.l.split(',').filter(Boolean);
   return o;
 }
-let hashT, hashReady = false;
+let hashReady = false;
+/* Không tự ghi trạng thái vào đuôi link (giữ link gọn). Nếu trang được mở bằng link chia sẻ có #v=…&l=…,
+   sau khi áp dụng xong thì xoá phần đuôi đó khỏi thanh địa chỉ. */
 function syncHash() {
-  if (!hashReady) return;
-  clearTimeout(hashT);
-  hashT = setTimeout(() => {
-    const c = map.getCenter();
-    const h = `#v=${map.getZoom()}/${c.lat.toFixed(6)}/${c.lng.toFixed(6)}&l=${defs.filter(d => d.on).map(d => d.id).join(',')}`;
-    try { history.replaceState(null, '', h); } catch (e) { /* file:// */ }
-  }, 300);
+  if (!hashReady || !location.hash) return;
+  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* file:// */ }
+}
+function shareUrl() {
+  const c = map.getCenter();
+  return location.href.split('#')[0] + `#v=${map.getZoom()}/${c.lat.toFixed(6)}/${c.lng.toFixed(6)}&l=${defs.filter(d => d.on).map(d => d.id).join(',')}`;
 }
 
 /* ===================== BẢN ĐỒ & CÔNG CỤ ===================== */
@@ -1506,7 +1507,7 @@ function initMap() {
     else if (t === 'locate') { toast('Đang xác định vị trí…'); map.locate({ maxZoom: 19, enableHighAccuracy: true }); }
     else if (t === 'full') { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen(); }
     else if (t === 'print') { $('printTitle').textContent = CONFIG.TITLE + ' — ' + new Date().toLocaleDateString('vi-VN'); map.invalidateSize(); setTimeout(() => window.print(), 100); }
-    else if (t === 'share') { syncHashNow(); copyText(location.href); }
+    else if (t === 'share') { copyText(shareUrl()); }
     else if (t === 'ana') { $('ana').hidden ? openAna() : closeAna(); }
     else if (t === 'legend') { const g = $('legend'); g.hidden = !g.hidden; b.classList.toggle('active', !g.hidden); }
     else if (t === 'help') { $('help').hidden = false; }
@@ -1544,10 +1545,6 @@ function initMap() {
     else if (M.mode && !M.done) measureFinish(); else if (!$('help').hidden) $('help').hidden = true; else closeInfo();
   });
   window.addEventListener('beforeprint', () => { $('printTitle').textContent = CONFIG.TITLE + ' — ' + new Date().toLocaleDateString('vi-VN'); map.invalidateSize(); });
-}
-function syncHashNow() {
-  const c = map.getCenter();
-  try { history.replaceState(null, '', `#v=${map.getZoom()}/${c.lat.toFixed(6)}/${c.lng.toFixed(6)}&l=${defs.filter(d => d.on).map(d => d.id).join(',')}`); } catch (e) { /* file:// */ }
 }
 const fit = () => { map.invalidateSize(); if (coreBounds) map.fitBounds(coreBounds, { padding: [30, 30], animate: false }); };
 const refit = () => { map.invalidateSize(); if (!S.userMoved) fit(); };
