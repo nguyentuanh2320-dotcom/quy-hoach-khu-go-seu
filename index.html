@@ -383,16 +383,16 @@ const lotShort = p => { const m = /^[A-Za-z]+\d+-(\d+)$/.exec(String(p.kyHieuLoD
 const LAYERS = [
   { id: 'RanhGioiQuyHoach_A', group: 'Nền', title: 'Ranh giới lập quy hoạch', geom: 'polygon', on: true, fill: false, stroke: '#e31a1c', weight: 3, dash: '14 5 3 5', hitPri: 9,
     key: p => p.phanLoai },
-  { id: 'MatNuoc_A', group: 'Cảnh quan', title: 'Mặt nước', geom: 'polygon', on: true, color: '#7fb8e6', stroke: '#4a90c2', weight: 1, fillOpacity: .85, hitPri: 6 },
+  { id: 'MatNuoc_A', group: 'Cảnh quan', title: 'Mặt nước', geom: 'polygon', color: '#7fb8e6', stroke: '#4a90c2', weight: 1, fillOpacity: .85, hitPri: 6 },
   { id: 'PhanVungSanNen_A', group: 'San nền', title: 'Phân vùng san nền', geom: 'polygon', cat: 'phanLoai', stroke: '#b45f06', weight: 1.2, fillOpacity: .4, hitPri: 3,
     label: { html: p => p.phanLoai, cls: 'lbl-badge', min: 0, max: 99 }, search: 'phanLoai', key: p => p.phanLoai },
   { id: 'ChucNangSuDungDat_A', group: 'Quy hoạch', title: 'Lô đất chức năng', geom: 'polygon', on: true, cat: 'phanLoai', colors: LAND, stroke: '#666', weight: .8, fillOpacity: .75, hitPri: 1,
     label: { html: p => p.kyHieuLoDat, txt: (p, close) => isEmpty(p.kyHieuLoDat) ? null : (close ? String(p.kyHieuLoDat) : String(lotShort(p) || p.kyHieuLoDat)), cls: 'lbl-lot', min: 19, max: 99 },
     search: 'kyHieuLoDat', key: p => p.kyHieuLoDat },
-  { id: 'KhongGianKTCQ_A', group: 'Cảnh quan', title: 'Không gian kiến trúc cảnh quan', geom: 'polygon', on: true, cat: 'ghiChu',
+  { id: 'KhongGianKTCQ_A', group: 'Cảnh quan', title: 'Không gian kiến trúc cảnh quan', geom: 'polygon', cat: 'ghiChu',
     catNames: { 'Sân_đường': 'Sân, đường nội bộ', 'Cây xanh - thảm cỏ': 'Cây xanh, thảm cỏ' }, colors: { 'Sân, đường nội bộ': '#e3d9c6', 'Cây xanh, thảm cỏ': '#a8d98f' },
     stroke: '#8a8a7a', weight: .5, fillOpacity: .75, hitPri: 5 },
-  { id: 'CongTrinh_A', group: 'Cảnh quan', title: 'Công trình xây dựng (mặt bằng)', geom: 'polygon', on: true, cat: 'ghiChu',
+  { id: 'CongTrinh_A', group: 'Cảnh quan', title: 'Công trình xây dựng (mặt bằng)', geom: 'polygon', cat: 'ghiChu',
     colors: { 'Nhà ở liền kề': '#d98a5f', 'Sân công trình': '#efe6d2', 'Nhà văn hóa': '#a259c4', 'Đất nhà ở liền kề_hiện trạng': '#9aa0a6' }, stroke: '#6b4a32', weight: .6, fillOpacity: .85, hitPri: 4 },
   { id: 'MangLuoiGiaoThongDuongBo_A', group: 'Nền', also: ['Giao thông, chỉ giới'], title: 'Lòng đường, vỉa hè', geom: 'polygon', cat: 'phanLoai', colors: { 'Lòng Đường': '#8d949e', 'Vỉa hè': '#e2d3b0' },
     stroke: '#6b7280', weight: .6, fillOpacity: .8, hitPri: 3.5 },
@@ -449,7 +449,7 @@ const LAYERS = [
   { id: 'ChiGioiXayDung_L', group: 'Giao thông, chỉ giới', title: 'Chỉ giới xây dựng', geom: 'line', color: '#7048e8', weight: 1.6, dash: '6 3' },
   { id: 'PhanOQuyHoach_A', group: 'Quy hoạch', title: 'Phân ô quy hoạch', geom: 'polygon', on: true, fill: false, stroke: '#e31a1c', weight: 2.2, hitPri: 2,
     label: { html: p => p.kyHieuOQH, cls: 'lbl-badge', min: 0, max: 19 }, search: 'kyHieuOQH', key: p => p.kyHieuOQH },
-  { id: 'CayXanh_P', group: 'Cảnh quan', title: 'Cây xanh quy hoạch', geom: 'point', on: true, color: '#2f8f3a', radius: 3 },
+  { id: 'CayXanh_P', group: 'Cảnh quan', title: 'Cây xanh quy hoạch', geom: 'point', color: '#2f8f3a', radius: 3 },
   { id: 'CongTrinhCBKT_P', group: 'Hạ tầng thoát nước mưa', title: 'Hố ga, cửa xả', geom: 'point', cat: 'phanLoai', radius: 4.5,
     colors: { 'Ga thu': '#e6550d', 'Ga thăm': '#3182bd', 'Ga thu thăm kết hợp': '#31a354', 'Cửa xả': '#d62728' } },
   { id: 'CaoDoCongTNM_P', group: 'Hạ tầng thoát nước mưa', title: 'Cao độ đáy cống', geom: 'point', color: '#0b7285', radius: 3.5 },
@@ -485,7 +485,8 @@ const LAYERS = [
 ];
 const GROUP_ORDER = ['Quy hoạch', 'Cảnh quan', 'Giao thông, chỉ giới', 'Hạ tầng thoát nước mưa', 'Thoát nước thải', 'Cấp nước', 'Cấp điện', 'Chiếu sáng', 'Thông tin liên lạc', 'San nền', 'Nền'];   // 'Nền' luôn ở cuối danh sách (và vẽ dưới cùng)
 const GROUP_OPTS = { 'Nền': { groupOpOnly: true } };   // nhóm chỉ có 1 thanh độ đậm cho cả nhóm (ẩn thanh độ đậm từng lớp)
-const OPEN_LAYERS = ['ChucNangSuDungDat_A'];   // lớp mở sẵn chú giải trong cây nội dung
+const OPEN_LAYERS = [];  // lớp mở sẵn danh sách loại khi tải trang
+const OPEN_GROUPS = ['Quy hoạch', 'Nền'];  // nhóm mở sẵn khi tải trang
 
 /* Nhãn tiếng Việt cho thuộc tính (trường không có ở đây sẽ hiện nguyên tên) */
 const FIELDS = {
@@ -964,7 +965,7 @@ function buildPanel() {
   groups.forEach(g => {
     const list = defs.filter(d => d.groups.includes(g)).sort((a, b) => b.order - a.order);
     if (!list.length) return;
-    const gn = el('div', 'node grp open', `<div class="nrow"><span class="tri"></span><input type="checkbox" class="gchk" aria-label="Bật/tắt nhóm"><span class="nm">${esc(g)}</span><span class="meta"></span></div><div class="kids"><div class="oprow gop"><span>Độ đậm nhóm</span><input type="range" min="0" max="100" value="100" aria-label="Độ đậm nhóm"></div></div>`);
+    const gn = el('div', 'node grp' + (OPEN_GROUPS.includes(g) ? ' open' : ''), `<div class="nrow"><span class="tri"></span><input type="checkbox" class="gchk" aria-label="Bật/tắt nhóm"><span class="nm">${esc(g)}</span><span class="meta"></span></div><div class="kids"><div class="oprow gop"><span>Độ đậm nhóm</span><input type="range" min="0" max="100" value="100" aria-label="Độ đậm nhóm"></div></div>`);
     gn.dataset.g = g;
     const kids = gn.querySelector('.kids');
     list.forEach(def => kids.appendChild(placeholderNode(def, g)));
